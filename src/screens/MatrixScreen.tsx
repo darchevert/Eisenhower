@@ -1,0 +1,347 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { useTheme } from '@/theme/Theme';
+import { QuadrantCard } from '@/components/matrix/QuadrantCard';
+import { TaskModal } from '@/components/tasks/TaskModal';
+import { WeeklyReviewModal } from '@/components/tasks/WeeklyReviewModal';
+import { BannerAd } from '@/ads/BannerAd';
+import { useTaskStore } from '@/store/taskStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { usePremium } from '@/hooks/usePremium';
+import { exportMatrixAsText } from '@/utils/export';
+import { Spacing, Typography, Shadow } from '@/theme/spacing';
+import { t, getLocale } from '@/i18n';
+import type { QuadrantId, Task } from '@/types';
+
+export function MatrixScreen() {
+  const { colors, mode } = useTheme();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantId>('q1');
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [reviewVisible, setReviewVisible] = useState(false);
+  const hasShownReview = useRef(false);
+
+  const matrices = useTaskStore((s) => s.matrices);
+  const tasks = useTaskStore((s) => s.tasks);
+  const currentMatrixId = useTaskStore((s) => s.currentMatrixId);
+  const currentMatrix = matrices.find((m) => m.id === currentMatrixId);
+
+  const focusModeEnabled = useSettingsStore((s) => s.focusModeEnabled);
+  const toggleFocusMode = useSettingsStore((s) => s.toggleFocusMode);
+  const lastWeeklyReview = useSettingsStore((s) => s.lastWeeklyReview);
+  const { isPremium } = usePremium();
+
+  // Show weekly review once per session if 7+ days have passed since last review
+  useEffect(() => {
+    if (hasShownReview.current) return;
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    if (Date.now() - (lastWeeklyReview ?? 0) >= SEVEN_DAYS) {
+      hasShownReview.current = true;
+      const timer = setTimeout(() => setReviewVisible(true), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, []); // intentionally run only on mount
+
+  function handleAddTask(quadrantId: QuadrantId) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setEditingTask(null);
+    setSelectedQuadrant(quadrantId);
+    setModalVisible(true);
+  }
+
+  function handleEditTask(task: Task) {
+    setEditingTask(task);
+    setSelectedQuadrant(task.quadrant);
+    setModalVisible(true);
+  }
+
+  function handleFocusMode() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleFocusMode();
+  }
+
+  async function handleExport() {
+    if (!currentMatrix) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setExporting(true);
+    try {
+      await exportMatrixAsText(currentMatrix, tasks);
+    } catch {
+      Alert.alert(t('share.exportTitle'), t('share.exportSuccess'));
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  const today = (() => {
+    try {
+      const formatted = new Intl.DateTimeFormat(getLocale(), {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(new Date());
+      return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    } catch {
+      return new Date().toDateString();
+    }
+  })();
+
+  const quadrantsToShow: QuadrantId[] = focusModeEnabled
+    ? ['q1', 'q2']
+    : ['q1', 'q3', 'q2', 'q4'];
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      {/* Header */}
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: colors.borderLight },
+          mode === 'light' && { backgroundColor: colors.surface, ...Shadow.sm },
+        ]}
+      >
+        <View style={styles.headerLeft}>
+          <Text
+            style={[styles.matrixName, { color: colors.text }]}
+            numberOfLines={1}
+            maxFontSizeMultiplier={1.2}
+          >
+            {currentMatrix?.name ?? 'My Matrix'}
+          </Text>
+          <Text
+            style={[styles.dateText, { color: colors.textSecondary }]}
+            maxFontSizeMultiplier={1.2}
+          >
+            {today}
+          </Text>
+        </View>
+
+        <View style={styles.headerActions}>
+          {/* Focus mode toggle */}
+          <TouchableOpacity
+            style={[
+              styles.headerBtn,
+              {
+                backgroundColor: focusModeEnabled ? colors.primary : colors.surfaceSecondary,
+                borderColor: focusModeEnabled ? colors.primary : colors.borderLight,
+              },
+            ]}
+            onPress={handleFocusMode}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
+            <Ionicons
+              name="eye-outline"
+              size={15}
+              color={focusModeEnabled ? '#FFFFFF' : colors.textSecondary}
+            />
+          </TouchableOpacity>
+
+          {/* Export */}
+          <TouchableOpacity
+            style={[
+              styles.headerBtn,
+              {
+                backgroundColor: colors.surfaceSecondary,
+                borderColor: colors.borderLight,
+                opacity: exporting ? 0.5 : 1,
+              },
+            ]}
+            onPress={handleExport}
+            disabled={exporting}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
+            <Ionicons name="share-outline" size={15} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          {/* Add task FAB */}
+          <TouchableOpacity
+            style={[styles.addFab, { backgroundColor: colors.primary }]}
+            onPress={() => handleAddTask('q1')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Focus mode banner */}
+      {focusModeEnabled && (
+        <View style={[styles.focusBanner, { backgroundColor: colors.primary + '18' }]}>
+          <Ionicons name="eye-outline" size={13} color={colors.primary} />
+          <Text style={[styles.focusBannerText, { color: colors.primary }]} maxFontSizeMultiplier={1.1}>
+            {t('matrix.focusMode')} — Q1 & Q2
+          </Text>
+          <TouchableOpacity onPress={handleFocusMode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close" size={14} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Axis labels */}
+      {!focusModeEnabled && (
+        <View style={[styles.axisContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.axisRow}>
+            <View style={[styles.axisTag, { backgroundColor: colors.surface }]}>
+              <Ionicons name="arrow-up" size={9} color={colors.textTertiary} />
+              <Text
+                style={[styles.axisLabel, { color: colors.textTertiary }]}
+                maxFontSizeMultiplier={1.1}
+              >
+                {t('matrix.important')}
+              </Text>
+            </View>
+            <View style={[styles.axisTag, { backgroundColor: colors.surface }]}>
+              <Ionicons name="flash-outline" size={9} color={colors.textTertiary} />
+              <Text
+                style={[styles.axisLabel, { color: colors.textTertiary }]}
+                maxFontSizeMultiplier={1.1}
+              >
+                {t('matrix.urgent')}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Matrix grid */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {focusModeEnabled ? (
+          // Focus mode: Q1 and Q2 stacked vertically (full width)
+          <>
+            <QuadrantCard quadrantId="q1" onAddTask={handleAddTask} onEditTask={handleEditTask} />
+            <QuadrantCard quadrantId="q2" onAddTask={handleAddTask} onEditTask={handleEditTask} />
+          </>
+        ) : (
+          // Normal 2x2 grid
+          <>
+            <View style={styles.row}>
+              <QuadrantCard quadrantId="q1" onAddTask={handleAddTask} onEditTask={handleEditTask} />
+              <QuadrantCard quadrantId="q3" onAddTask={handleAddTask} onEditTask={handleEditTask} />
+            </View>
+            <View style={styles.row}>
+              <QuadrantCard quadrantId="q2" onAddTask={handleAddTask} onEditTask={handleEditTask} />
+              <QuadrantCard quadrantId="q4" onAddTask={handleAddTask} onEditTask={handleEditTask} />
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      <BannerAd />
+
+      <TaskModal
+        visible={modalVisible}
+        task={editingTask}
+        defaultQuadrant={selectedQuadrant}
+        onClose={() => {
+          setModalVisible(false);
+          setEditingTask(null);
+        }}
+      />
+
+      <WeeklyReviewModal
+        visible={reviewVisible}
+        onClose={() => setReviewVisible(false)}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: Spacing.sm,
+  },
+  headerLeft: { flex: 1, minWidth: 0 },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    flexShrink: 0,
+  },
+  matrixName: {
+    ...Typography.title1,
+  },
+  dateText: {
+    ...Typography.footnote,
+    marginTop: 2,
+  },
+  headerBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addFab: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  focusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.xs + 2,
+  },
+  focusBannerText: {
+    flex: 1,
+    ...Typography.caption1,
+    fontWeight: '600',
+  },
+  axisContainer: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.xs,
+  },
+  axisRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  axisTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  axisLabel: {
+    ...Typography.caption2Semi,
+  },
+  scroll: { flex: 1 },
+  scrollContent: {
+    padding: Spacing.md,
+    gap: Spacing.md,
+    paddingBottom: Spacing.xxl,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+});

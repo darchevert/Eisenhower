@@ -1,0 +1,36 @@
+{
+  "cli": {
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "ADMOB_APP_ID_ANDROID": "ca-app-pub-3940256099942544~3347511713",
+        "ADMOB_APP_ID_IOS": "ca-app-pub-3940256099942544~3347511713",
+        "EXPO_PUBLIC_ADMOB_BANNER_ID_ANDROID": "ca-app-pub-3940256099942544/6300978111",
+        "EXPO_PUBLIC_ADMOB_BANNER_ID_IOS": "ca-app-pub-3940256099942544/6300978111",
+        "EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_ANDROID": "ca-app-pub-3940256099942544/1033173712",
+        "EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_IOS": "ca-app-pub-3940256099942544/1033173712",
+        "EXPO_PUBLIC_IAP_PREMIUM_ID": "com.darchevert.eisenhower.premium"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {},
+      "env": {
+        "ADMOB_APP_ID_ANDROID": "ca-app-pub-5218071664586608~1977894281",
+        "ADMOB_APP_ID_IOS": "ca-app-pub-5218071664586608~3071484102",
+        "EXPO_PUBLIC_ADMOB_BANNER_ID_ANDROID": "ca-app-pub-5218071664586608/8381171010",
+        "EXPO_PUBLIC_ADMOB_BANNER_ID_IOS": "ca-app-pub-5218071664586608/2997286311",
+        "EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_ANDROID": "ca-app-pub-5218071664586608/5679289970",
+        "EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_IOS": "ca-app-pub-5218071664586608/5506075757",
+        "EXPO_PUBLIC_IAP_PREMIUM_ID": "com.darchevert.eisenhower.premium"
+      }
+    }
+  }
+}
