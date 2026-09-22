@@ -2,17 +2,21 @@ const { withDangerousMod } = require('@expo/config-plugins');
 const fs = require('fs');
 const path = require('path');
 
-const FMT_FIX_LINES = [
-  '  # Fix fmt consteval errors with Xcode 26 clang',
-  '  installer.pods_project.targets.each do |target|',
-  '    target.build_configurations.each do |build_cfg|',
-  "      defs = build_cfg.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']",
-  '      defs = [defs] unless defs.is_a?(Array)',
-  "      defs << 'FMT_USE_CONSTEVAL=0' unless defs.include?('FMT_USE_CONSTEVAL=0')",
-  "      build_cfg.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs",
-  '    end',
-  '  end',
-];
+const FMT_FIX_RUBY = `
+  # Fix fmt consteval errors with Xcode 26 clang
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |build_cfg|
+      defs = build_cfg.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || '$(inherited)'
+      unless defs.is_a?(Array)
+        defs = defs.split(' ')
+      end
+      unless defs.any? { |d| d.start_with?('FMT_USE_CONSTEVAL') }
+        defs.push('FMT_USE_CONSTEVAL=0')
+        build_cfg.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
+      end
+    end
+  end
+`;
 
 module.exports = function withFmtFix(config) {
   return withDangerousMod(config, [
@@ -24,42 +28,34 @@ module.exports = function withFmtFix(config) {
       if (contents.includes('FMT_USE_CONSTEVAL')) return cfg;
 
       const MARKER = 'post_install do |installer|';
-      const markerIdx = contents.indexOf(MARKER);
+      const lines = contents.split('\n');
 
-      if (markerIdx === -1) {
-        contents += `\npost_install do |installer|\n${FMT_FIX_LINES.join('\n')}\nend\n`;
+      const markerLine = lines.findIndex((l) => l.includes(MARKER));
+
+      if (markerLine === -1) {
+        // No post_install block — add one at end of file
+        contents += `\npost_install do |installer|\n${FMT_FIX_RUBY}\nend\n`;
         fs.writeFileSync(podfilePath, contents);
         return cfg;
       }
 
-      // Find which line the marker is on
-      const lines = contents.split('\n');
-      let markerLine = -1;
-      let charCount = 0;
-      for (let i = 0; i < lines.length; i++) {
-        charCount += lines[i].length + 1; // +1 for \n
-        if (charCount > markerIdx && markerLine === -1) {
-          markerLine = i;
-        }
-      }
+      // Find indent of the `post_install do` line — the matching `end` has the same indent
+      const markerIndent = lines[markerLine].match(/^(\s*)/)[1];
 
-      // Scan lines after marker, track block depth to find the matching `end`
-      let depth = 1;
       let closingLine = -1;
-      for (let i = markerLine + 1; i < lines.length && depth > 0; i++) {
-        const t = lines[i].trim();
-        // Block openers
-        if (/\bdo(\s*\|[^|]*\|)?\s*(#.*)?$/.test(t)) depth++;
-        if (/^(if|unless|while|until|for|begin|class|module|def)\b/.test(t) && !/\bend\b/.test(t)) depth++;
-        // Block closer
-        if (/^end(\b|$)/.test(t)) {
-          depth--;
-          if (depth === 0) closingLine = i;
+      for (let i = markerLine + 1; i < lines.length; i++) {
+        const trimmed = lines[i].trimEnd();
+        const lineIndent = trimmed.match(/^(\s*)/)[1];
+        const lineContent = trimmed.trimStart();
+        if (lineContent === 'end' && lineIndent === markerIndent) {
+          closingLine = i;
+          break;
         }
       }
 
       if (closingLine !== -1) {
-        lines.splice(closingLine, 0, ...FMT_FIX_LINES);
+        // Insert FMT fix just before the closing `end` of the post_install block
+        lines.splice(closingLine, 0, FMT_FIX_RUBY);
         contents = lines.join('\n');
       }
 
