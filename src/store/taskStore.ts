@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { generateId } from '@/utils/id';
 import type { Task, Matrix, QuadrantId } from '@/types';
 import { WidgetService } from '@/services/widgetService';
+import { NotificationService } from '@/services/notificationService';
 
 function syncWidgetFromState(tasks: Task[], matrixId: string) {
   const q1Tasks = tasks
@@ -91,21 +92,37 @@ export const useTaskStore = create<TaskStore>()(
           syncWidgetFromState(next, s.currentMatrixId);
           return { tasks: next };
         });
+        if (task.dueDate) {
+          NotificationService.scheduleTaskReminder(task);
+        }
       },
 
-      updateTask: (id, updates) =>
+      updateTask: (id, updates) => {
+        const { tasks } = get();
+        const task = tasks.find((t) => t.id === id);
         set((s) => {
           const next = s.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t));
           syncWidgetFromState(next, s.currentMatrixId);
           return { tasks: next };
-        }),
+        });
+        if (task && 'dueDate' in updates) {
+          const merged = { ...task, ...updates };
+          if (merged.dueDate) {
+            NotificationService.scheduleTaskReminder(merged as Task);
+          } else {
+            NotificationService.cancelTaskReminder(id);
+          }
+        }
+      },
 
-      deleteTask: (id) =>
+      deleteTask: (id) => {
+        NotificationService.cancelTaskReminder(id);
         set((s) => {
           const next = s.tasks.filter((t) => t.id !== id);
           syncWidgetFromState(next, s.currentMatrixId);
           return { tasks: next };
-        }),
+        });
+      },
 
       toggleComplete: (id) => {
         const { tasks, currentMatrixId } = get();
@@ -118,6 +135,11 @@ export const useTaskStore = create<TaskStore>()(
             ? { ...t, completed: nowCompleting, completedAt: nowCompleting ? Date.now() : undefined }
             : t
         );
+
+        // Cancel reminder when completing
+        if (nowCompleting) {
+          NotificationService.cancelTaskReminder(id);
+        }
 
         // If completing a recurring task → create the next occurrence
         if (nowCompleting && task.recurrence && task.recurrence !== 'none') {
@@ -139,6 +161,9 @@ export const useTaskStore = create<TaskStore>()(
           const final = [...updatedTasks, nextTask];
           syncWidgetFromState(final, currentMatrixId);
           set({ tasks: final });
+          if (nextTask.dueDate) {
+            NotificationService.scheduleTaskReminder(nextTask);
+          }
         } else {
           syncWidgetFromState(updatedTasks, currentMatrixId);
           set({ tasks: updatedTasks });
