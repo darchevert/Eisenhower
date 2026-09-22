@@ -10,6 +10,9 @@ import { DashboardWidget } from './DashboardWidget';
 import { DoubleSectionWidget } from './DoubleSectionWidget';
 import { DateTasksWidget } from './DateTasksWidget';
 import { CalendarTasksWidget } from './CalendarTasksWidget';
+import { TodayWidget } from './TodayWidget';
+import { UpcomingWidget } from './UpcomingWidget';
+import { BoardWidget } from './BoardWidget';
 import type { WidgetData } from '../src/services/widgetService';
 
 const WIDGET_DATA_KEY = '@eisenhower/widget_data';
@@ -55,6 +58,12 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         renderWidget(React.createElement(DateTasksWidget, { data }));
       } else if (name === 'EisenhowerCalendarTasks') {
         renderWidget(React.createElement(CalendarTasksWidget, { data }));
+      } else if (name === 'EisenhowerToday') {
+        renderWidget(React.createElement(TodayWidget, { data }));
+      } else if (name === 'EisenhowerUpcoming') {
+        renderWidget(React.createElement(UpcomingWidget, { data }));
+      } else if (name === 'EisenhowerBoard') {
+        renderWidget(React.createElement(BoardWidget, { data }));
       } else {
         renderWidget(React.createElement(EisenhowerWidget, { tasks: data.q1 }));
       }

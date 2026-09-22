@@ -13,5 +13,8 @@ struct EisenhowerWidgetBundle: WidgetBundle {
     DoubleSectionWidget()
     DateTasksWidget()
     CalendarTasksWidget()
+    TodayWidget()
+    UpcomingTasksWidget()
+    BoardWidget()
   }
 }

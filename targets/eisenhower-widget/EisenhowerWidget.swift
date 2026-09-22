@@ -670,3 +670,274 @@ struct CalendarTasksWidget: Widget {
     .supportedFamilies([.systemMedium, .systemLarge])
   }
 }
+
+// MARK: - Today Widget (Date du jour)
+
+private func frenchMonthName(_ date: Date) -> String {
+  let months = ["JANVIER","FÉVRIER","MARS","AVRIL","MAI","JUIN",
+                "JUILLET","AOÛT","SEPTEMBRE","OCTOBRE","NOVEMBRE","DÉCEMBRE"]
+  return months[Calendar.current.component(.month, from: date) - 1]
+}
+
+private func frenchWeekdayName(_ date: Date) -> String {
+  let days = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"]
+  return days[Calendar.current.component(.weekday, from: date) - 1]
+}
+
+struct TodayEntryView: View {
+  let entry: EisenhowerEntry
+
+  var body: some View {
+    let cal = Calendar.current
+    let day = cal.component(.day, from: entry.date)
+    VStack(alignment: .leading, spacing: 0) {
+      Text(frenchMonthName(entry.date))
+        .font(.system(size: 9, weight: .semibold))
+        .foregroundColor(textSecondaryAdaptive)
+      Text(frenchWeekdayName(entry.date))
+        .font(.system(size: 13, weight: .semibold))
+        .foregroundColor(q2Color)
+      Text("\(day)")
+        .font(.system(size: 44, weight: .bold))
+        .foregroundColor(textPrimaryAdaptive)
+        .minimumScaleFactor(0.6)
+        .lineLimit(1)
+      Spacer(minLength: 0)
+      HStack(spacing: 6) {
+        ForEach([
+          (entry.data.q1.count, q1Color),
+          (entry.data.q2.count, q2Color),
+          (entry.data.q3.count, q3Color),
+          (entry.data.q4.count, q4Color),
+        ], id: \.1) { pair in
+          HStack(spacing: 2) {
+            Circle().fill(pair.1).frame(width: 6, height: 6)
+            Text("\(pair.0)")
+              .font(.system(size: 11, weight: .semibold))
+              .foregroundColor(textPrimaryAdaptive)
+          }
+        }
+      }
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+  }
+}
+
+struct TodayWidget: Widget {
+  let kind = "EisenhowerToday"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        TodayEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        TodayEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Date du jour")
+    .description("Date du jour avec résumé des quadrants.")
+    .supportedFamilies([.systemSmall])
+  }
+}
+
+// MARK: - Upcoming Tasks Widget (Tâches à venir)
+
+struct UpcomingTasksEntryView: View {
+  let entry: EisenhowerEntry
+  @Environment(\.widgetFamily) private var family
+
+  private struct TaggedTask {
+    let task: WidgetTask
+    let color: Color
+  }
+
+  private var allTasks: [TaggedTask] {
+    [
+      (entry.data.q1, q1Color),
+      (entry.data.q2, q2Color),
+      (entry.data.q3, q3Color),
+      (entry.data.q4, q4Color),
+    ].flatMap { pair in pair.0.map { TaggedTask(task: $0, color: pair.1) } }
+  }
+
+  var body: some View {
+    let maxTasks = family == .systemSmall ? 5 : 10
+    let visible = Array(allTasks.prefix(maxTasks))
+    let remaining = allTasks.count - visible.count
+
+    VStack(alignment: .leading, spacing: 0) {
+      Text("À venir")
+        .font(.system(size: 12, weight: .bold))
+        .foregroundColor(q2Color)
+        .padding(.bottom, 5)
+
+      ForEach(Array(visible.enumerated()), id: \.offset) { _, tagged in
+        HStack(spacing: 5) {
+          Circle()
+            .fill(tagged.color)
+            .frame(width: 6, height: 6)
+          Text(tagged.task.title)
+            .font(.system(size: 11))
+            .foregroundColor(textPrimaryAdaptive)
+            .lineLimit(1)
+        }
+        .padding(.vertical, 2)
+      }
+
+      if remaining > 0 {
+        Text("+\(remaining) de plus")
+          .font(.system(size: 10))
+          .foregroundColor(textSecondaryAdaptive)
+          .padding(.top, 3)
+      }
+
+      if allTasks.isEmpty {
+        Text("Aucune tâche")
+          .font(.system(size: 11))
+          .foregroundColor(textSecondaryAdaptive)
+      }
+
+      Spacer(minLength: 0)
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+  }
+}
+
+struct UpcomingTasksWidget: Widget {
+  let kind = "EisenhowerUpcoming"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        UpcomingTasksEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        UpcomingTasksEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Tâches à venir")
+    .description("Toutes les tâches par ordre de priorité.")
+    .supportedFamilies([.systemSmall, .systemMedium])
+  }
+}
+
+// MARK: - Board Widget (Tableau de bord — date + calendrier + 4 quadrants)
+
+private struct BoardQuadrantCell: View {
+  let tasks: [WidgetTask]
+  let label: String
+  let color: Color
+  let icon: String
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 2) {
+      HStack(spacing: 3) {
+        Text(icon).font(.system(size: 9))
+        Text(label)
+          .font(.system(size: 8, weight: .bold))
+          .foregroundColor(color)
+          .lineLimit(1)
+        Spacer(minLength: 0)
+        Text("\(tasks.count)")
+          .font(.system(size: 8, weight: .bold))
+          .foregroundColor(color)
+      }
+      ForEach(Array(tasks.prefix(2).enumerated()), id: \.offset) { _, task in
+        HStack(spacing: 3) {
+          Circle()
+            .stroke(color.opacity(0.6), lineWidth: 1)
+            .frame(width: 5, height: 5)
+          Text(task.title)
+            .font(.system(size: 9))
+            .foregroundColor(textPrimaryAdaptive)
+            .lineLimit(1)
+        }
+      }
+      if tasks.isEmpty {
+        Text("—")
+          .font(.system(size: 9))
+          .foregroundColor(textSecondaryAdaptive)
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+}
+
+struct BoardEntryView: View {
+  let entry: EisenhowerEntry
+
+  var body: some View {
+    let cal = Calendar.current
+    let day = cal.component(.day, from: entry.date)
+
+    VStack(spacing: 0) {
+      // Top half: date panel + mini calendar
+      HStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 1) {
+          Text(frenchMonthName(entry.date))
+            .font(.system(size: 8, weight: .semibold))
+            .foregroundColor(textSecondaryAdaptive)
+          Text(frenchWeekdayName(entry.date))
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundColor(q2Color)
+          Text("\(day)")
+            .font(.system(size: 34, weight: .bold))
+            .foregroundColor(textPrimaryAdaptive)
+            .minimumScaleFactor(0.6)
+            .lineLimit(1)
+          Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(width: 82)
+
+        Rectangle()
+          .fill(dividerAdaptive)
+          .frame(width: 1)
+
+        MiniCalendarView(date: entry.date)
+          .padding(8)
+          .frame(maxWidth: .infinity)
+      }
+      .frame(maxHeight: .infinity)
+
+      Rectangle()
+        .fill(dividerAdaptive)
+        .frame(height: 1)
+
+      // Bottom half: 2×2 quadrant grid
+      VStack(spacing: 0) {
+        HStack(spacing: 0) {
+          BoardQuadrantCell(tasks: entry.data.q1, label: "Important & Urgent",      color: q1Color, icon: "🔥")
+            .padding(8)
+          Rectangle().fill(dividerAdaptive).frame(width: 1)
+          BoardQuadrantCell(tasks: entry.data.q2, label: "Important & Non urgent",  color: q2Color, icon: "📅")
+            .padding(8)
+        }
+        Rectangle().fill(dividerAdaptive).frame(height: 1)
+        HStack(spacing: 0) {
+          BoardQuadrantCell(tasks: entry.data.q3, label: "Urgent & Moins important", color: q3Color, icon: "⚡")
+            .padding(8)
+          Rectangle().fill(dividerAdaptive).frame(width: 1)
+          BoardQuadrantCell(tasks: entry.data.q4, label: "Non urgent & Non import.",  color: q4Color, icon: "🗑")
+            .padding(8)
+        }
+      }
+      .frame(maxHeight: .infinity)
+    }
+  }
+}
+
+struct BoardWidget: Widget {
+  let kind = "EisenhowerBoard"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        BoardEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        BoardEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Tableau de bord")
+    .description("Calendrier et vue complète de toutes les tâches.")
+    .supportedFamilies([.systemLarge])
+  }
+}
