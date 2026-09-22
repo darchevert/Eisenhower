@@ -2,25 +2,27 @@ const { withDangerousMod } = require('@expo/config-plugins');
 const fs = require('fs');
 const path = require('path');
 
-// This Ruby snippet is injected just before the closing `end` of the existing
-// post_install block. It sets FMT_USE_CONSTEVAL=0 via OTHER_CPLUSPLUSFLAGS
-// (passed directly to clang) so Xcode 26's stricter consteval mode is disabled
-// for all pod targets.
+// Patches Pods/fmt/include/fmt/base.h after pod install.
+// Xcode 26+ clang enforces consteval strictly; changing FMT_USE_CONSTEVAL from 1 to 0
+// disables the consteval path that triggers the build failure.
+// Approach taken from expo/expo PR #44230 (closed contributor PR, not yet in build-properties).
 const FMT_FIX_RUBY = `
-  # withFmtFix: disable consteval for fmt library (Xcode 26 compatibility)
-  puts "withFmtFix: patching #{installer.pods_project.targets.length} targets"
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      existing = (config.build_settings['OTHER_CPLUSPLUSFLAGS'] || '$(inherited)').to_s
-      unless existing.include?('FMT_USE_CONSTEVAL=0')
-        config.build_settings['OTHER_CPLUSPLUSFLAGS'] = existing + ' -DFMT_USE_CONSTEVAL=0'
+    # @generated begin expo-fmt-use-consteval-fix
+    fmt_base = File.join(installer.sandbox.root.to_s, 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      content = File.read(fmt_base)
+      patched = content.gsub(/#\\s*define FMT_USE_CONSTEVAL 1/, '# define FMT_USE_CONSTEVAL 0')
+      if patched != content
+        File.chmod(0644, fmt_base)
+        File.write(fmt_base, patched)
+        puts "expo-fmt-use-consteval-fix: patched #{fmt_base}"
+      else
+        puts "expo-fmt-use-consteval-fix: #{fmt_base} already patched or pattern not found"
       end
-      existing2 = (config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || '$(inherited)').to_s
-      unless existing2.include?('FMT_USE_CONSTEVAL=0')
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = existing2 + ' FMT_USE_CONSTEVAL=0'
-      end
+    else
+      puts "expo-fmt-use-consteval-fix: #{fmt_base} not found, skipping"
     end
-  end
+    # @generated end expo-fmt-use-consteval-fix
 `;
 
 module.exports = function withFmtFix(config) {
@@ -30,47 +32,59 @@ module.exports = function withFmtFix(config) {
       const podfilePath = path.join(cfg.modRequest.platformProjectRoot, 'Podfile');
       let contents = fs.readFileSync(podfilePath, 'utf8');
 
-      if (contents.includes('FMT_USE_CONSTEVAL')) {
+      if (contents.includes('expo-fmt-use-consteval-fix')) {
         process.stderr.write('withFmtFix: already patched, skipping\n');
         return cfg;
       }
 
-      const MARKER = 'post_install do |installer|';
-      const lines = contents.split('\n');
-      const markerLine = lines.findIndex((l) => l.includes(MARKER));
+      // Find react_native_post_install(...) and inject right after its closing paren line.
+      // This avoids having to parse post_install block boundaries.
+      const start = contents.indexOf('react_native_post_install');
 
-      if (markerLine === -1) {
-        process.stderr.write('withFmtFix: no post_install found, appending new block\n');
+      if (start === -1) {
+        // No react_native_post_install — append a standalone post_install block
+        process.stderr.write('withFmtFix: react_native_post_install not found, appending new post_install block\n');
         contents += `\npost_install do |installer|\n${FMT_FIX_RUBY}\nend\n`;
         fs.writeFileSync(podfilePath, contents);
         return cfg;
       }
 
-      const markerIndent = lines[markerLine].match(/^(\s*)/)[1];
-      process.stderr.write(`withFmtFix: found post_install at line ${markerLine + 1}, indent="${markerIndent}"\n`);
+      // Find opening paren
+      const openParen = contents.indexOf('(', start);
+      if (openParen === -1) {
+        process.stderr.write('withFmtFix: ERROR — no opening paren after react_native_post_install\n');
+        return cfg;
+      }
 
-      let closingLine = -1;
-      for (let i = markerLine + 1; i < lines.length; i++) {
-        const raw = lines[i];
-        const lineIndent = raw.match(/^(\s*)/)[1];
-        const lineContent = raw.trim();
-        if (lineContent === 'end' && lineIndent === markerIndent) {
-          closingLine = i;
-          break;
+      // Walk forward to find matching closing paren (handles multi-line call)
+      let depth = 0;
+      let closingParen = -1;
+      for (let i = openParen; i < contents.length; i++) {
+        if (contents[i] === '(') depth++;
+        else if (contents[i] === ')') {
+          depth--;
+          if (depth === 0) {
+            closingParen = i;
+            break;
+          }
         }
       }
 
-      process.stderr.write(`withFmtFix: closingLine=${closingLine}\n`);
-
-      if (closingLine !== -1) {
-        lines.splice(closingLine, 0, FMT_FIX_RUBY);
-        contents = lines.join('\n');
-        process.stderr.write('withFmtFix: injection successful\n');
-      } else {
-        process.stderr.write('withFmtFix: WARNING — closingLine not found, Podfile unchanged\n');
+      if (closingParen === -1) {
+        process.stderr.write('withFmtFix: ERROR — could not find closing paren of react_native_post_install\n');
+        return cfg;
       }
 
+      // Insert after the end of the line containing the closing paren
+      let endOfLine = contents.indexOf('\n', closingParen);
+      if (endOfLine === -1) endOfLine = contents.length - 1;
+
+      const before = contents.slice(0, endOfLine + 1);
+      const after = contents.slice(endOfLine + 1);
+      contents = before + FMT_FIX_RUBY + after;
+
       fs.writeFileSync(podfilePath, contents);
+      process.stderr.write(`withFmtFix: injected fmt base.h patch after react_native_post_install (char ${closingParen})\n`);
       return cfg;
     },
   ]);
