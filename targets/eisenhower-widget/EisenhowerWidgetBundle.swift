@@ -4,6 +4,10 @@ import SwiftUI
 @main
 struct EisenhowerWidgetBundle: WidgetBundle {
   var body: some Widget {
-    EisenhowerWidget()
+    Q1Widget()
+    Q2Widget()
+    Q3Widget()
+    Q4Widget()
+    MatrixWidget()
   }
 }

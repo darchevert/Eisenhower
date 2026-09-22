@@ -1,26 +1,18 @@
 import React from 'react';
-import {
-  FlexWidget,
-  TextWidget,
-  ImageWidget,
-} from 'react-native-android-widget';
-
-export interface WidgetTask {
-  id: string;
-  title: string;
-}
+import { FlexWidget, TextWidget } from 'react-native-android-widget';
+import type { WidgetTask } from './EisenhowerWidget';
 
 interface Props {
   tasks: WidgetTask[];
 }
 
 const BG = '#0F172A';
-const RED = '#EF4444';
+const AMBER = '#F59E0B';
 const TEXT = '#E2E8F0';
 const SECONDARY = '#64748B';
 const SEPARATOR = '#1E293B';
 
-export function EisenhowerWidget({ tasks }: Props) {
+export function Q3Widget({ tasks }: Props) {
   const visibleTasks = tasks.slice(0, 5);
 
   return (
@@ -34,52 +26,23 @@ export function EisenhowerWidget({ tasks }: Props) {
         padding: 14,
       }}
     >
-      {/* Header */}
-      <FlexWidget
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginBottom: 6,
-        }}
-      >
+      <FlexWidget style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
         <FlexWidget
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: RED,
-            marginRight: 6,
-          }}
+          style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: AMBER, marginRight: 6 }}
         />
         <FlexWidget style={{ flex: 1 }}>
           <TextWidget
-            text="Do First"
-            style={{
-              fontSize: 13,
-              color: RED,
-              fontWeight: 'bold',
-            }}
+            text="Delegate"
+            style={{ fontSize: 13, color: AMBER, fontWeight: 'bold' }}
             maxLines={1}
           />
         </FlexWidget>
       </FlexWidget>
 
-      {/* Separator */}
-      <FlexWidget
-        style={{
-          height: 1,
-          backgroundColor: SEPARATOR,
-          marginBottom: 8,
-        }}
-      />
+      <FlexWidget style={{ height: 1, backgroundColor: SEPARATOR, marginBottom: 8 }} />
 
-      {/* Task list */}
       {visibleTasks.length === 0 ? (
-        <TextWidget
-          text="No urgent tasks"
-          style={{ color: SECONDARY, fontSize: 12 }}
-          maxLines={1}
-        />
+        <TextWidget text="No tasks" style={{ color: SECONDARY, fontSize: 12 }} maxLines={1} />
       ) : (
         visibleTasks.map((task) => (
           <FlexWidget
@@ -98,11 +61,7 @@ export function EisenhowerWidget({ tasks }: Props) {
               }}
             />
             <FlexWidget style={{ flex: 1 }}>
-              <TextWidget
-                text={task.title}
-                style={{ color: TEXT, fontSize: 12 }}
-                maxLines={1}
-              />
+              <TextWidget text={task.title} style={{ color: TEXT, fontSize: 12 }} maxLines={1} />
             </FlexWidget>
           </FlexWidget>
         ))

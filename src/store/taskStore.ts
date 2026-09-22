@@ -7,12 +7,19 @@ import { WidgetService } from '@/services/widgetService';
 import { NotificationService } from '@/services/notificationService';
 
 function syncWidgetFromState(tasks: Task[], matrixId: string) {
-  const q1Tasks = tasks
-    .filter((t) => t.quadrant === 'q1' && t.matrixId === matrixId && !t.completed)
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .slice(0, 5)
-    .map((t) => ({ id: t.id, title: t.title }));
-  WidgetService.sync(q1Tasks).catch(() => {});
+  const makeList = (q: QuadrantId) =>
+    tasks
+      .filter((t) => t.quadrant === q && t.matrixId === matrixId && !t.completed)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .slice(0, 5)
+      .map((t) => ({ id: t.id, title: t.title }));
+
+  WidgetService.syncAll({
+    q1: makeList('q1'),
+    q2: makeList('q2'),
+    q3: makeList('q3'),
+    q4: makeList('q4'),
+  }).catch(() => {});
 }
 
 const DEFAULT_MATRIX: Matrix = {

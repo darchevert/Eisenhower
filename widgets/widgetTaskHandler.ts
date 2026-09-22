@@ -2,17 +2,28 @@ import React from 'react';
 import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EisenhowerWidget, type WidgetTask } from './EisenhowerWidget';
+import { Q2Widget } from './Q2Widget';
+import { Q3Widget } from './Q3Widget';
+import { Q4Widget } from './Q4Widget';
+import { MatrixOverviewWidget } from './MatrixOverviewWidget';
+import type { WidgetData } from '../src/services/widgetService';
 
-const WIDGET_TASKS_KEY = '@eisenhower/widget_tasks';
+const WIDGET_DATA_KEY = '@eisenhower/widget_data';
+const WIDGET_TASKS_KEY = '@eisenhower/widget_tasks'; // legacy fallback
 
-async function loadTasks(): Promise<WidgetTask[]> {
+async function loadWidgetData(): Promise<WidgetData> {
   try {
-    const json = await AsyncStorage.getItem(WIDGET_TASKS_KEY);
-    if (!json) return [];
-    return JSON.parse(json) as WidgetTask[];
-  } catch {
-    return [];
-  }
+    const json = await AsyncStorage.getItem(WIDGET_DATA_KEY);
+    if (json) return JSON.parse(json) as WidgetData;
+
+    // Legacy fallback: read old Q1-only key
+    const legacy = await AsyncStorage.getItem(WIDGET_TASKS_KEY);
+    if (legacy) {
+      const q1 = JSON.parse(legacy) as WidgetTask[];
+      return { q1, q2: [], q3: [], q4: [] };
+    }
+  } catch {}
+  return { q1: [], q2: [], q3: [], q4: [] };
 }
 
 export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
@@ -22,8 +33,21 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
     case 'WIDGET_ADDED':
     case 'WIDGET_UPDATE':
     case 'WIDGET_RESIZED': {
-      const tasks = await loadTasks();
-      renderWidget(React.createElement(EisenhowerWidget, { tasks }));
+      const data = await loadWidgetData();
+      const name = widgetInfo.widgetName;
+
+      if (name === 'EisenhowerQ2') {
+        renderWidget(React.createElement(Q2Widget, { tasks: data.q2 }));
+      } else if (name === 'EisenhowerQ3') {
+        renderWidget(React.createElement(Q3Widget, { tasks: data.q3 }));
+      } else if (name === 'EisenhowerQ4') {
+        renderWidget(React.createElement(Q4Widget, { tasks: data.q4 }));
+      } else if (name === 'EisenhowerMatrix') {
+        renderWidget(React.createElement(MatrixOverviewWidget, { data }));
+      } else {
+        // Default: 'Eisenhower' = Q1
+        renderWidget(React.createElement(EisenhowerWidget, { tasks: data.q1 }));
+      }
       break;
     }
     case 'WIDGET_CLICK':
