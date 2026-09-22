@@ -9,6 +9,7 @@ import { useTaskStore } from '@/store/taskStore';
 import { useBadge } from '@/hooks/useBadge';
 import { useAppOpen } from '@/ads/useAppOpen';
 import AppNavigator from '@/navigation/AppNavigator';
+import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import { PurchaseService } from '@/services/purchaseService';
 import { NotificationService } from '@/services/notificationService';
 
@@ -18,6 +19,7 @@ PurchaseService.configure();
 function ThemedApp() {
   const currentTheme = useSettingsStore((s) => s.currentTheme);
   const settingsHydrated = useSettingsStore((s) => s._hasHydrated);
+  const hasSeenOnboarding = useSettingsStore((s) => s.hasSeenOnboarding);
   const tasksHydrated = useTaskStore((s) => s._hasHydrated);
 
   useBadge();
@@ -45,7 +47,7 @@ function ThemedApp() {
 
   return (
     <ThemeProvider themeName={currentTheme}>
-      <AppNavigator />
+      {hasSeenOnboarding ? <AppNavigator /> : <OnboardingScreen />}
       <StatusBar style="auto" />
     </ThemeProvider>
   );

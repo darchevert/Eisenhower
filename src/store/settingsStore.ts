@@ -18,9 +18,11 @@ interface SettingsStore {
   sortBy: SortBy;
   lastWeeklyReview: number | null;
   focusSessions: FocusSession[];
+  hasSeenOnboarding: boolean;
   _hasHydrated: boolean;
 
   setHasHydrated: (v: boolean) => void;
+  markOnboardingDone: () => void;
   addFocusSession: (session: Omit<FocusSession, 'id'>) => void;
   setPremium: (v: boolean) => void;
   setTheme: (theme: ThemeName) => void;
@@ -48,9 +50,11 @@ export const useSettingsStore = create<SettingsStore>()(
       sortBy: 'default',
       lastWeeklyReview: null,
       focusSessions: [],
+      hasSeenOnboarding: false,
       _hasHydrated: false,
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
+      markOnboardingDone: () => set({ hasSeenOnboarding: true }),
       addFocusSession: (session) =>
         set((s) => ({
           focusSessions: [{ ...session, id: generateId() }, ...s.focusSessions].slice(0, 100),
@@ -85,6 +89,7 @@ export const useSettingsStore = create<SettingsStore>()(
         sortBy: s.sortBy,
         lastWeeklyReview: s.lastWeeklyReview,
         focusSessions: s.focusSessions,
+        hasSeenOnboarding: s.hasSeenOnboarding,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
