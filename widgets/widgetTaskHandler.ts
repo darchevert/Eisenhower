@@ -9,6 +9,7 @@ import { MatrixOverviewWidget } from './MatrixOverviewWidget';
 import { DashboardWidget } from './DashboardWidget';
 import { DoubleSectionWidget } from './DoubleSectionWidget';
 import { DateTasksWidget } from './DateTasksWidget';
+import { CalendarTasksWidget } from './CalendarTasksWidget';
 import type { WidgetData } from '../src/services/widgetService';
 
 const WIDGET_DATA_KEY = '@eisenhower/widget_data';
@@ -52,6 +53,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         renderWidget(React.createElement(DoubleSectionWidget, { q1Tasks: data.q1, q2Tasks: data.q2 }));
       } else if (name === 'EisenhowerDateTasks') {
         renderWidget(React.createElement(DateTasksWidget, { data }));
+      } else if (name === 'EisenhowerCalendarTasks') {
+        renderWidget(React.createElement(CalendarTasksWidget, { data }));
       } else {
         renderWidget(React.createElement(EisenhowerWidget, { tasks: data.q1 }));
       }

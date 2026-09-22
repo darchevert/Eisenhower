@@ -432,6 +432,9 @@ private let monthFormatter: DateFormatter = {
 private let weekdayFormatter: DateFormatter = {
   let f = DateFormatter(); f.dateFormat = "EEEE"; return f
 }()
+private let monthYearFormatter: DateFormatter = {
+  let f = DateFormatter(); f.dateFormat = "MMMM yyyy"; return f
+}()
 
 struct DateTasksEntryView: View {
   var entry: EisenhowerEntry
@@ -506,6 +509,164 @@ struct DateTasksWidget: Widget {
     }
     .configurationDisplayName("Date & Tasks")
     .description("Today's date with tasks by quadrant.")
+    .supportedFamilies([.systemMedium, .systemLarge])
+  }
+}
+
+// MARK: - Mini Calendar Grid
+
+private struct MiniCalendarView: View {
+  let date: Date
+
+  private let cal = Calendar.current
+  private let dayLetters = ["D", "L", "M", "M", "J", "V", "S"]
+
+  private var monthLabel: String { monthYearFormatter.string(from: date) }
+  private var today: Int { cal.component(.day, from: date) }
+
+  private var days: [Int?] {
+    var components = cal.dateComponents([.year, .month], from: date)
+    components.day = 1
+    guard let firstDay = cal.date(from: components) else { return [] }
+    let weekday = cal.component(.weekday, from: firstDay) - 1 // 0=Sun
+    let range = cal.range(of: .day, in: .month, for: date)!
+    var result: [Int?] = Array(repeating: nil, count: weekday)
+    result += (1...range.count).map { Optional($0) }
+    return result
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 3) {
+      Text(monthLabel)
+        .font(.system(size: 9, weight: .semibold))
+        .foregroundColor(textSecondaryAdaptive)
+
+      // Day-of-week header
+      HStack(spacing: 0) {
+        ForEach(dayLetters, id: \.self) { letter in
+          Text(letter)
+            .font(.system(size: 8, weight: .medium))
+            .foregroundColor(textSecondaryAdaptive)
+            .frame(maxWidth: .infinity)
+        }
+      }
+
+      // Day grid
+      let rows = days.chunks(of: 7)
+      ForEach(0..<rows.count, id: \.self) { r in
+        HStack(spacing: 0) {
+          ForEach(0..<7, id: \.self) { c in
+            let idx = r * 7 + c
+            let day = idx < days.count ? days[idx] : nil
+            ZStack {
+              if let d = day, d == today {
+                Circle().fill(q2Color).frame(width: 14, height: 14)
+              }
+              Text(day.map { "\($0)" } ?? "")
+                .font(.system(size: 8))
+                .foregroundColor(day == today ? Color.white : textPrimaryAdaptive)
+            }
+            .frame(maxWidth: .infinity)
+          }
+        }
+      }
+    }
+  }
+}
+
+private extension Array {
+  func chunks(of size: Int) -> [[Element]] {
+    stride(from: 0, to: count, by: size).map {
+      Array(self[$0..<Swift.min($0 + size, count)])
+    }
+  }
+}
+
+// MARK: - Calendar & Tasks widget
+
+struct CalendarTasksEntryView: View {
+  var entry: EisenhowerEntry
+  @Environment(\.widgetFamily) var family
+
+  private struct QDef { let tasks: [WidgetTask]; let label: String; let color: Color; let icon: String }
+  private func quadrants(_ data: WidgetData) -> [QDef] { [
+    QDef(tasks: data.q1, label: "Important & Urgent",     color: q1Color, icon: "🔴"),
+    QDef(tasks: data.q2, label: "Important & Non urgent", color: q2Color, icon: "📅"),
+    QDef(tasks: data.q3, label: "Urgent & Moins important", color: q3Color, icon: "⚡"),
+    QDef(tasks: data.q4, label: "Non urgent & moins important", color: q4Color, icon: "☰"),
+  ] }
+
+  private var maxPerQ: Int { family == .systemLarge ? 2 : 1 }
+
+  var body: some View {
+    let qs = quadrants(entry.data)
+    HStack(spacing: 0) {
+      // Left: mini calendar
+      VStack(alignment: .leading, spacing: 0) {
+        MiniCalendarView(date: entry.date)
+          .padding(.bottom, 6)
+        Spacer(minLength: 0)
+      }
+      .padding(10)
+      .frame(maxHeight: .infinity, alignment: .topLeading)
+
+      dividerAdaptive.frame(width: 1)
+
+      // Right: quadrant sections
+      VStack(alignment: .leading, spacing: 4) {
+        ForEach(0..<qs.count, id: \.self) { i in
+          let q = qs[i]
+          VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+              Circle().fill(q.color).frame(width: 5, height: 5)
+              Text(q.label)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(q.color)
+                .lineLimit(1)
+              Spacer()
+              Text("\(q.tasks.count)")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 1)
+                .background(q.color)
+                .cornerRadius(6)
+            }
+            ForEach(Array(q.tasks.prefix(maxPerQ))) { task in
+              HStack(alignment: .top, spacing: 4) {
+                Circle()
+                  .stroke(q.color.opacity(0.6), lineWidth: 1)
+                  .frame(width: 8, height: 8)
+                  .padding(.top, 1)
+                Text(task.title)
+                  .font(.system(size: 10))
+                  .foregroundColor(textPrimaryAdaptive)
+                  .lineLimit(1)
+              }
+            }
+          }
+        }
+        Spacer(minLength: 0)
+      }
+      .padding(10)
+      .frame(maxHeight: .infinity, alignment: .topLeading)
+    }
+    .background(bgAdaptive)
+  }
+}
+
+struct CalendarTasksWidget: Widget {
+  let kind = "EisenhowerCalendarTasks"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        CalendarTasksEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        CalendarTasksEntryView(entry: entry)
+      }
+    }
+    .configurationDisplayName("Calendrier & Tâches")
+    .description("Mini calendrier mensuel avec tâches par quadrant.")
     .supportedFamilies([.systemMedium, .systemLarge])
   }
 }
