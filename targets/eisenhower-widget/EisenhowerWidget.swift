@@ -464,7 +464,8 @@ struct DateTasksEntryView: View {
         Spacer()
       }
       .padding(12)
-      .frame(width: 72, maxHeight: .infinity, alignment: .topLeading)
+      .frame(width: 72)
+      .frame(maxHeight: .infinity, alignment: .topLeading)
 
       dividerAdaptive.frame(width: 1)
 
@@ -953,7 +954,7 @@ private func calendarAuthorized() -> Bool {
   return status == .authorized
 }
 
-private struct CalEvent {
+struct CalEvent {
   let title: String
   let startDate: Date
   let allDay: Bool
@@ -967,7 +968,7 @@ private func loadMonthEvents(for date: Date) -> [Date: [CalEvent]] {
   comps.day = 1
   guard let start = cal.date(from: comps),
         let end = cal.date(byAdding: .month, value: 1, to: start) else { return [:] }
-  let pred = ekStore.predicateForEvents(startDate: start, endDate: end, calendars: nil)
+  let pred = ekStore.predicateForEvents(withStart: start, end: end, calendars: nil)
   var byDay: [Date: [CalEvent]] = [:]
   for ev in ekStore.events(matching: pred) {
     let dayStart = cal.startOfDay(for: ev.startDate)
