@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 const zh: Translations = {
-  nav: { matrix: '矩阵', tasks: '任务', stats: '统计', settings: '设置' },
+  nav: { matrix: '矩阵', tasks: '任务', focus: '专注', stats: '统计', settings: '设置' },
   quadrants: {
     q1: { label: '立即完成', subtitle: '紧急 · 重要', short: '立做' },
     q2: { label: '计划安排', subtitle: '重要 · 不紧急', short: '计划' },
@@ -134,6 +134,23 @@ const zh: Translations = {
     q1Warning: '紧急任务较多 — 注重提前规划',
     close: '关闭',
     skip: '稍后提醒',
+  },
+  focus: {
+    title: '专注',
+    tab: '专注',
+    sessionCount: '今日{{count}}次',
+    selectTask: '任务（可选）',
+    noTask: '无任务',
+    start: '开始',
+    pause: '暂停',
+    resume: '继续',
+    end: '结束',
+    complete: '专注完成！',
+    completeDesc: '干得漂亮，继续加油！',
+    custom: '自定义',
+    min: '分钟',
+    running: '进行中',
+    paused: '已暂停',
   },
 };
 

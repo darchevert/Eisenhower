@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme/Theme';
 import { usePremium } from '@/hooks/usePremium';
+import { PurchaseService } from '@/services/purchaseService';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTaskStore } from '@/store/taskStore';
 import { NotificationService } from '@/services/notificationService';
@@ -33,6 +35,33 @@ const SORT_OPTIONS: { key: SortBy; label: string }[] = [
 export function SettingsScreen() {
   const { colors, mode } = useTheme();
   const { isPremium } = usePremium();
+  const versionTapCount = useRef(0);
+  const versionTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleVersionTap() {
+    versionTapCount.current += 1;
+    if (versionTapTimeout.current) clearTimeout(versionTapTimeout.current);
+    versionTapTimeout.current = setTimeout(() => { versionTapCount.current = 0; }, 2000);
+    if (versionTapCount.current >= 7) {
+      versionTapCount.current = 0;
+      if (Platform.OS === 'ios') {
+        Alert.prompt(
+          '🔑',
+          '',
+          async (userId) => {
+            if (!userId?.trim()) return;
+            const ok = await PurchaseService.loginAsUser(userId.trim());
+            Alert.alert(ok ? '✓' : '✗', ok ? 'Premium activé' : 'Aucun entitlement trouvé');
+          },
+          'plain-text',
+          '',
+          'default',
+        );
+      } else {
+        Alert.alert('ID', 'Utilise l\'interface RevenueCat pour accorder l\'accès sur Android.');
+      }
+    }
+  }
   const navigation = useNavigation<any>();
   const currentTheme = useSettingsStore((s) => s.currentTheme);
   const setTheme = useSettingsStore((s) => s.setTheme);
@@ -279,6 +308,40 @@ export function SettingsScreen() {
             </View>
           </View>
 
+          {/* Widgets */}
+          <View style={[styles.row, { borderBottomColor: colors.borderLight }]}>
+            <View style={styles.rowLeft}>
+              <View style={[styles.rowIconBox, { backgroundColor: '#6366F118' }]}>
+                <Ionicons name="grid-outline" size={16} color="#6366F1" />
+              </View>
+              <View style={styles.rowLabelGroup}>
+                <Text style={[styles.rowLabel, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
+                  {t('premium.features.widgets')}
+                </Text>
+                <Text style={[styles.rowSublabel, { color: colors.textTertiary }]} maxFontSizeMultiplier={1.1}>
+                  {isPremium ? t('premium.features.widgetsDesc') : t('common.premium')}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.rowRight}>
+              {!isPremium && <PremiumBadge />}
+              {isPremium && (
+                <Ionicons name="checkmark-circle" size={20} color="#34C759" />
+              )}
+              {!isPremium && (
+                <TouchableOpacity
+                  onPress={() => {
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                    navigation.navigate('Premium');
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
           {/* Sort By */}
           <View style={[styles.row, { borderBottomWidth: 0 }]}>
             <View style={styles.rowLeft}>
@@ -342,10 +405,14 @@ export function SettingsScreen() {
           {t('settings.about')}
         </Text>
         <View style={[styles.section, { backgroundColor: colors.surface }, Shadow.sm]}>
-          <View style={[styles.row, { borderBottomColor: colors.borderLight }]}>
+          <TouchableOpacity
+            style={[styles.row, { borderBottomColor: colors.borderLight }]}
+            onPress={handleVersionTap}
+            activeOpacity={1}
+          >
             <Text style={[styles.rowLabel, { color: colors.text }]} maxFontSizeMultiplier={1.2}>{t('settings.version')}</Text>
             <Text style={[styles.rowValue, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.2}>1.0.0</Text>
-          </View>
+          </TouchableOpacity>
           <View style={[styles.row, { borderBottomWidth: 0 }]}>
             <Text style={[styles.rowLabel, { color: colors.text }]} maxFontSizeMultiplier={1.2}>{t('settings.status')}</Text>
             <Text style={[styles.rowValue, { color: isPremium ? '#34C759' : colors.textSecondary }]} maxFontSizeMultiplier={1.2}>

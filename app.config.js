@@ -1,6 +1,6 @@
 module.exports = {
   expo: {
-    name: "Eisenhower — Priority Matrix",
+    name: "Eisenhower - Priority Matrix",
     slug: "eisenhower",
     version: "1.0.0",
     orientation: "portrait",
@@ -15,6 +15,9 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: "com.darchevert.eisenhower",
+      entitlements: {
+        "com.apple.security.application-groups": ["group.com.darchevert.eisenhower"],
+      },
     },
     android: {
       package: "com.darchevert.eisenhower",
@@ -36,6 +39,24 @@ module.exports = {
     },
     owner: "darchevert",
     plugins: [
+      ["@bacons/apple-targets"],
+      [
+        "react-native-android-widget",
+        {
+          widgets: [
+            {
+              name: "Eisenhower",
+              label: "Eisenhower — Do First",
+              minWidth: "180dp",
+              minHeight: "110dp",
+              targetCellWidth: 3,
+              targetCellHeight: 2,
+              description: "Vos tâches urgentes et importantes",
+              widgetFeatures: ["reconfigurable", "configuration_optional"],
+            },
+          ],
+        },
+      ],
       [
         "react-native-google-mobile-ads",
         {

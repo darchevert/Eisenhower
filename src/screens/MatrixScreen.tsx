@@ -19,12 +19,12 @@ import { useTaskStore } from '@/store/taskStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { usePremium } from '@/hooks/usePremium';
 import { exportMatrixAsText } from '@/utils/export';
-import { Spacing, Typography, Shadow } from '@/theme/spacing';
+import { Spacing, Typography } from '@/theme/spacing';
 import { t, getLocale } from '@/i18n';
 import type { QuadrantId, Task } from '@/types';
 
 export function MatrixScreen() {
-  const { colors, mode } = useTheme();
+  const { colors } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantId>('q1');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -108,10 +108,30 @@ export function MatrixScreen() {
         style={[
           styles.header,
           { borderBottomColor: colors.borderLight },
-          mode === 'light' && { backgroundColor: colors.surface, ...Shadow.sm },
+          { backgroundColor: colors.surface },
         ]}
       >
-        <View style={styles.headerLeft}>
+        {/* Left: focus mode */}
+        <TouchableOpacity
+          style={[
+            styles.headerBtn,
+            {
+              backgroundColor: focusModeEnabled ? colors.primary + '20' : colors.surfaceSecondary,
+              borderColor: focusModeEnabled ? colors.primary : colors.borderLight,
+            },
+          ]}
+          onPress={handleFocusMode}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons
+            name="eye-outline"
+            size={16}
+            color={focusModeEnabled ? colors.primary : colors.textSecondary}
+          />
+        </TouchableOpacity>
+
+        {/* Center: matrix name */}
+        <View style={styles.headerCenter}>
           <Text
             style={[styles.matrixName, { color: colors.text }]}
             numberOfLines={1}
@@ -119,35 +139,10 @@ export function MatrixScreen() {
           >
             {currentMatrix?.name ?? 'My Matrix'}
           </Text>
-          <Text
-            style={[styles.dateText, { color: colors.textSecondary }]}
-            maxFontSizeMultiplier={1.2}
-          >
-            {today}
-          </Text>
         </View>
 
-        <View style={styles.headerActions}>
-          {/* Focus mode toggle */}
-          <TouchableOpacity
-            style={[
-              styles.headerBtn,
-              {
-                backgroundColor: focusModeEnabled ? colors.primary : colors.surfaceSecondary,
-                borderColor: focusModeEnabled ? colors.primary : colors.borderLight,
-              },
-            ]}
-            onPress={handleFocusMode}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          >
-            <Ionicons
-              name="eye-outline"
-              size={15}
-              color={focusModeEnabled ? '#FFFFFF' : colors.textSecondary}
-            />
-          </TouchableOpacity>
-
-          {/* Export */}
+        {/* Right: export + add */}
+        <View style={styles.headerRight}>
           <TouchableOpacity
             style={[
               styles.headerBtn,
@@ -159,12 +154,11 @@ export function MatrixScreen() {
             ]}
             onPress={handleExport}
             disabled={exporting}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="share-outline" size={15} color={colors.textSecondary} />
+            <Ionicons name="share-outline" size={16} color={colors.textSecondary} />
           </TouchableOpacity>
 
-          {/* Add task FAB */}
           <TouchableOpacity
             style={[styles.addFab, { backgroundColor: colors.primary }]}
             onPress={() => handleAddTask('q1')}
@@ -266,39 +260,43 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
-    paddingBottom: Spacing.md,
+    paddingBottom: Spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
     gap: Spacing.sm,
   },
-  headerLeft: { flex: 1, minWidth: 0 },
-  headerActions: {
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    minWidth: 0,
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
     flexShrink: 0,
   },
   matrixName: {
-    ...Typography.title1,
+    ...Typography.headline,
+    fontWeight: '700',
   },
   dateText: {
     ...Typography.footnote,
     marginTop: 2,
   },
   headerBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addFab: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -1,10 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme/Theme';
-import { Badge } from '@/components/ui/Badge';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { TaskCard } from './TaskCard';
 import { SortableTaskList } from './SortableTaskList';
 import { useTaskStore } from '@/store/taskStore';
@@ -46,54 +44,91 @@ export function QuadrantCard({ quadrantId, onAddTask, onEditTask }: QuadrantCard
 
   const label = t(`quadrants.${quadrantId}.label`);
 
+  const borderColor = mode === 'dark'
+    ? style.accent + '55'
+    : style.accent + '45';
+
+  const addBtnBg = mode === 'dark'
+    ? 'rgba(255,255,255,0.08)'
+    : 'rgba(0,0,0,0.05)';
+
   return (
     <View
       style={[
         styles.card,
-        { backgroundColor: style.bg },
-        mode === 'light'
-          ? { borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(0,0,0,0.07)' }
-          : { borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.06)' },
+        {
+          backgroundColor: colors.surface,
+          borderColor,
+          borderWidth: 1.5,
+          ...Platform.select({
+            android: { elevation: 1 },
+          }),
+        },
       ]}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: style.accent }]}>
+      <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={styles.iconBox}>
-            <Ionicons name={meta.icon as any} size={14} color="#FFFFFF" />
-          </View>
-          <View style={styles.headerText}>
-            <Text style={styles.headerTitle} numberOfLines={1} maxFontSizeMultiplier={1.2}>{label}</Text>
-          </View>
+          <Ionicons
+            name={meta.icon as any}
+            size={15}
+            color={style.accent}
+            style={styles.headerIcon}
+          />
+          <Text
+            style={[styles.headerTitle, { color: style.accent }]}
+            numberOfLines={1}
+            maxFontSizeMultiplier={1.2}
+          >
+            {label}
+          </Text>
+          <Ionicons
+            name="chevron-forward"
+            size={12}
+            color={style.accent + '80'}
+          />
         </View>
+
         <View style={styles.headerRight}>
           {activeTasks.length > 0 && (
-            <Badge count={activeTasks.length} color="rgba(255,255,255,0.28)" />
+            <View style={[styles.badge, { backgroundColor: style.accent }]}>
+              <Text style={styles.badgeText}>{activeTasks.length}</Text>
+            </View>
           )}
           <TouchableOpacity
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onAddTask(quadrantId);
             }}
-            style={styles.addBtn}
+            style={[styles.addBtn, { backgroundColor: addBtnBg }]}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="add" size={17} color="#FFFFFF" />
+            <Ionicons name="add" size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* Subtle separator */}
+      <View style={[styles.divider, { backgroundColor: borderColor }]} />
+
       {/* Task list */}
       <View style={styles.body}>
         {displayTasks.length === 0 ? (
-          <View style={styles.emptyWrap}>
-            <EmptyState
-              icon={meta.icon as any}
-              title={t('matrix.noTasks')}
-              subtitle={t('matrix.tapToAdd')}
-              color={style.accent}
-            />
-          </View>
+          <TouchableOpacity
+            style={styles.emptyWrap}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onAddTask(quadrantId);
+            }}
+            activeOpacity={0.6}
+          >
+            <View style={[styles.emptyPlus, { borderColor: style.accent + '50' }]}>
+              <Ionicons name="add" size={18} color={style.accent + '80'} />
+            </View>
+            <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
+              {t('matrix.tapToAdd')}
+            </Text>
+          </TouchableOpacity>
         ) : (
           <SortableTaskList
             tasks={displayTasks}
@@ -149,53 +184,75 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm + 2,
+    paddingVertical: Spacing.sm + 1,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    gap: 5,
     flex: 1,
     minWidth: 0,
   },
-  headerText: {
-    flex: 1,
-    minWidth: 0,
-  },
-  iconBox: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  headerIcon: {
     flexShrink: 0,
   },
   headerTitle: {
-    color: '#FFFFFF',
     ...Typography.subheadSemi,
-    letterSpacing: 0.1,
+    flex: 1,
+    minWidth: 0,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
     flexShrink: 0,
+    marginLeft: Spacing.xs,
+  },
+  badge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 13,
   },
   addBtn: {
     width: 26,
     height: 26,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: Spacing.md,
   },
   body: {
     paddingTop: Spacing.xs,
     paddingBottom: Spacing.xs,
   },
   emptyWrap: {
-    paddingVertical: Spacing.xs,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  emptyPlus: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    ...Typography.caption1,
   },
   showMore: {
     paddingVertical: Spacing.sm,

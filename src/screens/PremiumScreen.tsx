@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme/Theme';
 import { usePremium } from '@/hooks/usePremium';
+import { PurchaseService } from '@/services/purchaseService';
 import { Spacing, Radius, Shadow, Typography, MIN_TOUCH_TARGET } from '@/theme/spacing';
 import { sp } from '@/utils/scale';
 
@@ -38,7 +39,14 @@ export function PremiumScreen() {
   const { colors } = useTheme();
   const { isPremium, purchase, restore } = usePremium();
   const [loading, setLoading] = useState(false);
+  const [price, setPrice] = useState<string | null>(null);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    PurchaseService.getPackage().then((pkg) => {
+      if (pkg) setPrice(pkg.product.priceString);
+    });
+  }, []);
 
   async function handlePurchase() {
     setLoading(true);
@@ -135,7 +143,7 @@ export function PremiumScreen() {
         {/* Price & CTA */}
         <View style={[styles.ctaCard, { backgroundColor: colors.surface }, Shadow.md]}>
           <View style={styles.priceRow}>
-            <Text style={[styles.price, { color: colors.text }]}>$4.99</Text>
+            <Text style={[styles.price, { color: colors.text }]}>{price ?? '$4.99'}</Text>
             <Text style={[styles.priceNote, { color: colors.textSecondary }]}>one-time · forever</Text>
           </View>
 

@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 const nl: Translations = {
-  nav: { matrix: 'Matrix', tasks: 'Taken', stats: 'Stats', settings: 'Instellingen' },
+  nav: { matrix: 'Matrix', tasks: 'Taken', focus: 'Focus', stats: 'Stats', settings: 'Instellingen' },
   quadrants: {
     q1: { label: 'Doe nu', subtitle: 'Urgent · Belangrijk', short: 'Doen' },
     q2: { label: 'Plan', subtitle: 'Belangrijk · Niet urgent', short: 'Plan' },
@@ -134,6 +134,23 @@ const nl: Translations = {
     q1Warning: 'Veel urgente taken — werk aan vooruitplannen',
     close: 'Sluiten',
     skip: 'Later herinneren',
+  },
+  focus: {
+    title: 'Focus',
+    tab: 'Focus',
+    sessionCount: '{{count}} vandaag',
+    selectTask: 'Taak (optioneel)',
+    noTask: 'Geen taak',
+    start: 'Starten',
+    pause: 'Pauzeren',
+    resume: 'Hervatten',
+    end: 'Beëindigen',
+    complete: 'Sessie voltooid!',
+    completeDesc: 'Goed gedaan, ga zo door!',
+    custom: 'Aangep.',
+    min: 'min',
+    running: 'bezig',
+    paused: 'gepauzeerd',
   },
 };
 

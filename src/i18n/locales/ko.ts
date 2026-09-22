@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 const ko: Translations = {
-  nav: { matrix: '매트릭스', tasks: '할 일', stats: '통계', settings: '설정' },
+  nav: { matrix: '매트릭스', tasks: '할 일', focus: '집중', stats: '통계', settings: '설정' },
   quadrants: {
     q1: { label: '즉시 실행', subtitle: '긴급 · 중요', short: '실행' },
     q2: { label: '계획 수립', subtitle: '중요 · 긴급하지 않음', short: '계획' },
@@ -134,6 +134,23 @@ const ko: Translations = {
     q1Warning: '긴급한 할 일이 많습니다 — 사전 계획에 집중하세요',
     close: '닫기',
     skip: '나중에 알림',
+  },
+  focus: {
+    title: '집중',
+    tab: '집중',
+    sessionCount: '오늘 {{count}}회',
+    selectTask: '할 일 (선택)',
+    noTask: '할 일 없음',
+    start: '시작',
+    pause: '일시정지',
+    resume: '재개',
+    end: '종료',
+    complete: '세션 완료!',
+    completeDesc: '잘했어요, 계속 하세요!',
+    custom: '맞춤',
+    min: '분',
+    running: '진행 중',
+    paused: '일시정지',
   },
 };
 

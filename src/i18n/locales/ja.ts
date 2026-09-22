@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 const ja: Translations = {
-  nav: { matrix: 'マトリクス', tasks: 'タスク', stats: '統計', settings: '設定' },
+  nav: { matrix: 'マトリクス', tasks: 'タスク', focus: 'フォーカス', stats: '統計', settings: '設定' },
   quadrants: {
     q1: { label: '今すぐやる', subtitle: '緊急 · 重要', short: 'やる' },
     q2: { label: '計画する', subtitle: '重要 · 緊急でない', short: '計画' },
@@ -134,6 +134,23 @@ const ja: Translations = {
     q1Warning: '緊急タスクが多い — 予防策を意識しましょう',
     close: '閉じる',
     skip: '後で通知',
+  },
+  focus: {
+    title: 'フォーカス',
+    tab: 'フォーカス',
+    sessionCount: '今日{{count}}件',
+    selectTask: 'タスク（任意）',
+    noTask: 'タスクなし',
+    start: '開始',
+    pause: '一時停止',
+    resume: '再開',
+    end: '終了',
+    complete: 'セッション完了！',
+    completeDesc: 'お疲れ様です！',
+    custom: 'カスタム',
+    min: '分',
+    running: '進行中',
+    paused: '一時停止中',
   },
 };
 

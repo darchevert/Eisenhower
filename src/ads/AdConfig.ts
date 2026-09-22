@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 const TEST_IDS = {
   banner: 'ca-app-pub-3940256099942544/6300978111',
   interstitial: 'ca-app-pub-3940256099942544/1033173712',
+  appOpen: 'ca-app-pub-3940256099942544/9257395921',
 };
 
 const PROD_IDS = {
@@ -13,10 +14,15 @@ const PROD_IDS = {
   interstitial: Platform.OS === 'ios'
     ? (process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_IOS ?? TEST_IDS.interstitial)
     : (process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_ANDROID ?? TEST_IDS.interstitial),
+
+  appOpen: Platform.OS === 'ios'
+    ? (process.env.EXPO_PUBLIC_ADMOB_APP_OPEN_ID_IOS ?? TEST_IDS.appOpen)
+    : (process.env.EXPO_PUBLIC_ADMOB_APP_OPEN_ID_ANDROID ?? TEST_IDS.appOpen),
 };
 
 export const AdConfig = {
   banner: __DEV__ ? TEST_IDS.banner : PROD_IDS.banner,
   interstitial: __DEV__ ? TEST_IDS.interstitial : PROD_IDS.interstitial,
-  interstitialTriggerCount: 5,
+  appOpen: __DEV__ ? TEST_IDS.appOpen : PROD_IDS.appOpen,
+  interstitialTriggerCount: 3,
 } as const;

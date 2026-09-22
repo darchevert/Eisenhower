@@ -2,6 +2,7 @@ const en = {
   nav: {
     matrix: 'Matrix',
     tasks: 'Tasks',
+    focus: 'Focus',
     stats: 'Stats',
     settings: 'Settings',
   },
@@ -147,6 +148,23 @@ const en = {
     q1Warning: 'Many urgent tasks — focus on planning ahead',
     close: 'Close',
     skip: 'Remind me later',
+  },
+  focus: {
+    title: 'Focus',
+    tab: 'Focus',
+    sessionCount: '{{count}} done today',
+    selectTask: 'Task (optional)',
+    noTask: 'No task',
+    start: 'Start',
+    pause: 'Pause',
+    resume: 'Resume',
+    end: 'End',
+    complete: 'Session complete!',
+    completeDesc: 'Great work, keep it up!',
+    custom: 'Custom',
+    min: 'min',
+    running: 'in progress',
+    paused: 'paused',
   },
 };
 

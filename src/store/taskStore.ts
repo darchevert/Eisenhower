@@ -3,6 +3,16 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { generateId } from '@/utils/id';
 import type { Task, Matrix, QuadrantId } from '@/types';
+import { WidgetService } from '@/services/widgetService';
+
+function syncWidgetFromState(tasks: Task[], matrixId: string) {
+  const q1Tasks = tasks
+    .filter((t) => t.quadrant === 'q1' && t.matrixId === matrixId && !t.completed)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .slice(0, 5)
+    .map((t) => ({ id: t.id, title: t.title }));
+  WidgetService.sync(q1Tasks).catch(() => {});
+}
 
 const DEFAULT_MATRIX: Matrix = {
   id: 'default',
@@ -76,16 +86,26 @@ export const useTaskStore = create<TaskStore>()(
           order: quadrantTasks.length,
           recurrence: data.recurrence ?? 'none',
         };
-        set((s) => ({ tasks: [...s.tasks, task] }));
+        set((s) => {
+          const next = [...s.tasks, task];
+          syncWidgetFromState(next, s.currentMatrixId);
+          return { tasks: next };
+        });
       },
 
       updateTask: (id, updates) =>
-        set((s) => ({
-          tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-        })),
+        set((s) => {
+          const next = s.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t));
+          syncWidgetFromState(next, s.currentMatrixId);
+          return { tasks: next };
+        }),
 
       deleteTask: (id) =>
-        set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
+        set((s) => {
+          const next = s.tasks.filter((t) => t.id !== id);
+          syncWidgetFromState(next, s.currentMatrixId);
+          return { tasks: next };
+        }),
 
       toggleComplete: (id) => {
         const { tasks, currentMatrixId } = get();
@@ -116,8 +136,11 @@ export const useTaskStore = create<TaskStore>()(
             recurrence: task.recurrence,
             dueDate: nextDueDate(task.dueDate, task.recurrence),
           };
-          set({ tasks: [...updatedTasks, nextTask] });
+          const final = [...updatedTasks, nextTask];
+          syncWidgetFromState(final, currentMatrixId);
+          set({ tasks: final });
         } else {
+          syncWidgetFromState(updatedTasks, currentMatrixId);
           set({ tasks: updatedTasks });
         }
       },
@@ -127,11 +150,13 @@ export const useTaskStore = create<TaskStore>()(
         const targetTasks = tasks.filter(
           (t) => t.quadrant === quadrant && t.matrixId === currentMatrixId
         );
-        set((s) => ({
-          tasks: s.tasks.map((t) =>
+        set((s) => {
+          const next = s.tasks.map((t) =>
             t.id === id ? { ...t, quadrant, order: targetTasks.length } : t
-          ),
-        }));
+          );
+          syncWidgetFromState(next, s.currentMatrixId);
+          return { tasks: next };
+        });
       },
 
       reorderTask: (id, newOrder) => {

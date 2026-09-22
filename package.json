@@ -8,6 +8,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "@bacons/apple-targets": "^5.0.0",
     "@expo/metro-runtime": "~5.0.5",
     "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
@@ -19,6 +20,7 @@
     "expo": "~53.0.0",
     "expo-asset": "~11.1.7",
     "expo-file-system": "~18.1.11",
+    "expo-font": "~13.3.2",
     "expo-haptics": "~14.1.0",
     "expo-localization": "~16.1.6",
     "expo-notifications": "~0.30.0",
@@ -27,12 +29,15 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
+    "react-native-android-widget": "^0.22.1",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-google-mobile-ads": "^14.0.0",
     "react-native-iap": "^12.15.0",
+    "react-native-purchases": "^10.10.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.4.0",
+    "react-native-svg": "^15.11.2",
     "react-native-web": "^0.20.0",
     "zustand": "^5.0.3"
   },

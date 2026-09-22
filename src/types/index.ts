@@ -54,3 +54,11 @@ export interface AppStats {
   streakDays: number;
   dailyCompletions: WeeklyStats[];
 }
+
+export interface FocusSession {
+  id: string;
+  taskId?: string;
+  taskTitle?: string;
+  duration: number;
+  completedAt: number;
+}

@@ -52,4 +52,4 @@ export const AppColors = {
   },
 } as const;
 
-export type ColorScheme = typeof AppColors.light;
+export type ColorScheme = { readonly [K in keyof typeof AppColors.light]: string };

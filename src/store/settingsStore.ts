@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { ThemeName } from '@/types';
+import { generateId } from '@/utils/id';
+import type { ThemeName, FocusSession } from '@/types';
 
 export type SortBy = 'default' | 'dueDate' | 'alpha';
 
@@ -16,9 +17,11 @@ interface SettingsStore {
   focusModeEnabled: boolean;
   sortBy: SortBy;
   lastWeeklyReview: number | null;
+  focusSessions: FocusSession[];
   _hasHydrated: boolean;
 
   setHasHydrated: (v: boolean) => void;
+  addFocusSession: (session: Omit<FocusSession, 'id'>) => void;
   setPremium: (v: boolean) => void;
   setTheme: (theme: ThemeName) => void;
   setDarkMode: (v: boolean) => void;
@@ -44,9 +47,14 @@ export const useSettingsStore = create<SettingsStore>()(
       focusModeEnabled: false,
       sortBy: 'default',
       lastWeeklyReview: null,
+      focusSessions: [],
       _hasHydrated: false,
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
+      addFocusSession: (session) =>
+        set((s) => ({
+          focusSessions: [{ ...session, id: generateId() }, ...s.focusSessions].slice(0, 100),
+        })),
       setPremium: (v) => set({ isPremium: v }),
       setTheme: (theme) => set({ currentTheme: theme }),
       setDarkMode: (v) => set({ darkModeEnabled: v }),
@@ -76,6 +84,7 @@ export const useSettingsStore = create<SettingsStore>()(
         focusModeEnabled: s.focusModeEnabled,
         sortBy: s.sortBy,
         lastWeeklyReview: s.lastWeeklyReview,
+        focusSessions: s.focusSessions,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 const ru: Translations = {
-  nav: { matrix: 'Матрица', tasks: 'Задачи', stats: 'Статистика', settings: 'Настройки' },
+  nav: { matrix: 'Матрица', tasks: 'Задачи', focus: 'Фокус', stats: 'Статистика', settings: 'Настройки' },
   quadrants: {
     q1: { label: 'Сделать сейчас', subtitle: 'Срочно · Важно', short: 'Сделать' },
     q2: { label: 'Запланировать', subtitle: 'Важно · Не срочно', short: 'Планировать' },
@@ -134,6 +134,23 @@ const ru: Translations = {
     q1Warning: 'Много срочных задач — работайте над планированием',
     close: 'Закрыть',
     skip: 'Напомнить позже',
+  },
+  focus: {
+    title: 'Фокус',
+    tab: 'Фокус',
+    sessionCount: '{{count}} сегодня',
+    selectTask: 'Задача (необяз.)',
+    noTask: 'Без задачи',
+    start: 'Начать',
+    pause: 'Пауза',
+    resume: 'Продолжить',
+    end: 'Завершить',
+    complete: 'Сессия завершена!',
+    completeDesc: 'Отличная работа, продолжайте!',
+    custom: 'Своё',
+    min: 'мин',
+    running: 'выполняется',
+    paused: 'на паузе',
   },
 };
 

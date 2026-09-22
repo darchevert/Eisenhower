@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 const ar: Translations = {
-  nav: { matrix: 'المصفوفة', tasks: 'المهام', stats: 'إحصاء', settings: 'الإعدادات' },
+  nav: { matrix: 'المصفوفة', tasks: 'المهام', focus: 'تركيز', stats: 'إحصاء', settings: 'الإعدادات' },
   quadrants: {
     q1: { label: 'افعل الآن', subtitle: 'عاجل · مهم', short: 'افعل' },
     q2: { label: 'خطط', subtitle: 'مهم · غير عاجل', short: 'خطط' },
@@ -134,6 +134,23 @@ const ar: Translations = {
     q1Warning: 'مهام عاجلة كثيرة — ركز على التخطيط المسبق',
     close: 'إغلاق',
     skip: 'تذكيري لاحقاً',
+  },
+  focus: {
+    title: 'تركيز',
+    tab: 'تركيز',
+    sessionCount: '{{count}} اليوم',
+    selectTask: 'مهمة (اختياري)',
+    noTask: 'بدون مهمة',
+    start: 'ابدأ',
+    pause: 'توقف',
+    resume: 'استأنف',
+    end: 'انهِ',
+    complete: 'اكتملت الجلسة!',
+    completeDesc: 'عمل رائع، استمر!',
+    custom: 'مخصص',
+    min: 'دقيقة',
+    running: 'جار',
+    paused: 'متوقف',
   },
 };
 

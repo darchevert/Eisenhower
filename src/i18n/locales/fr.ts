@@ -4,6 +4,7 @@ const fr: Translations = {
   nav: {
     matrix: 'Matrice',
     tasks: 'Tâches',
+    focus: 'Focus',
     stats: 'Stats',
     settings: 'Réglages',
   },
@@ -149,6 +150,23 @@ const fr: Translations = {
     q1Warning: 'Beaucoup de tâches urgentes — travaillez sur la planification',
     close: 'Fermer',
     skip: 'Me rappeler plus tard',
+  },
+  focus: {
+    title: 'Focus',
+    tab: 'Focus',
+    sessionCount: '{{count}} terminée(s) aujourd\'hui',
+    selectTask: 'Tâche (optionnel)',
+    noTask: 'Sans tâche',
+    start: 'Démarrer',
+    pause: 'Pause',
+    resume: 'Reprendre',
+    end: 'Terminer',
+    complete: 'Session terminée !',
+    completeDesc: 'Excellent travail !',
+    custom: 'Perso.',
+    min: 'min',
+    running: 'en cours',
+    paused: 'en pause',
   },
 };
 

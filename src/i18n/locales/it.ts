@@ -1,7 +1,7 @@
 import type { Translations } from './en';
 
 const it: Translations = {
-  nav: { matrix: 'Matrice', tasks: 'Attività', stats: 'Stats', settings: 'Impostazioni' },
+  nav: { matrix: 'Matrice', tasks: 'Attività', focus: 'Focus', stats: 'Stats', settings: 'Impostazioni' },
   quadrants: {
     q1: { label: 'Fai subito', subtitle: 'Urgente · Importante', short: 'Fai' },
     q2: { label: 'Pianifica', subtitle: 'Importante · Non urgente', short: 'Plan' },
@@ -134,6 +134,23 @@ const it: Translations = {
     q1Warning: 'Molti compiti urgenti — lavora sulla prevenzione',
     close: 'Chiudi',
     skip: 'Ricordamelo dopo',
+  },
+  focus: {
+    title: 'Focus',
+    tab: 'Focus',
+    sessionCount: '{{count}} oggi',
+    selectTask: 'Compito (opzionale)',
+    noTask: 'Senza compito',
+    start: 'Inizia',
+    pause: 'Pausa',
+    resume: 'Riprendi',
+    end: 'Termina',
+    complete: 'Sessione completata!',
+    completeDesc: 'Ottimo lavoro, continua così!',
+    custom: 'Pers.',
+    min: 'min',
+    running: 'in corso',
+    paused: 'in pausa',
   },
 };
 

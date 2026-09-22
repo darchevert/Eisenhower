@@ -12,6 +12,7 @@ import { formatDueDate } from '@/utils/date';
 import { Spacing, Radius, Shadow, Typography, MIN_TOUCH_TARGET } from '@/theme/spacing';
 import { QUADRANT_IDS } from '@/utils/quadrants';
 import { t } from '@/i18n';
+import { BannerAd } from '@/ads/BannerAd';
 
 export function StatsScreen() {
   const { colors, mode, getQuadrantStyle } = useTheme();
@@ -209,6 +210,7 @@ export function StatsScreen() {
           )}
         </View>
       </ScrollView>
+      <BannerAd />
     </SafeAreaView>
   );
 }

@@ -1,112 +1,94 @@
-import {
-  initConnection,
-  endConnection,
-  getProducts,
-  requestPurchase,
-  getAvailablePurchases,
-  purchaseUpdatedListener,
-  purchaseErrorListener,
-  finishTransaction,
-  type Purchase,
-  type PurchaseError,
-} from 'react-native-iap';
+import Purchases, {
+  LOG_LEVEL,
+  type PurchasesOffering,
+  type PurchasesPackage,
+} from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { useSettingsStore } from '@/store/settingsStore';
 
-const PRODUCT_ID =
-  process.env.EXPO_PUBLIC_IAP_PREMIUM_ID ?? 'com.darchevert.eisenhower.premium';
+const ENTITLEMENT_ID = 'premium';
+
+const API_KEY =
+  Platform.OS === 'ios'
+    ? (process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? '')
+    : (process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? '');
 
 export const PurchaseService = {
-  /**
-   * Trigger the native purchase flow.
-   * Returns true if the purchase completed successfully.
-   */
+  configure(): void {
+    if (Platform.OS === 'web') return;
+    if (__DEV__) {
+      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+    }
+    if (API_KEY) {
+      Purchases.configure({ apiKey: API_KEY });
+    }
+  },
+
+  async getOffering(): Promise<PurchasesOffering | null> {
+    try {
+      const offerings = await Purchases.getOfferings();
+      return offerings.current ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async getPackage(): Promise<PurchasesPackage | null> {
+    const offering = await PurchaseService.getOffering();
+    return offering?.availablePackages[0] ?? null;
+  },
+
   async purchase(): Promise<boolean> {
-    // Dev shortcut — unlock instantly without going through the store
     if (__DEV__) {
       useSettingsStore.getState().setPremium(true);
       return true;
     }
-
-    let connection = false;
     try {
-      await initConnection();
-      connection = true;
-
-      return await new Promise<boolean>((resolve) => {
-        const updateSub = purchaseUpdatedListener(async (purchase: Purchase) => {
-          try {
-            if (purchase.transactionReceipt) {
-              await finishTransaction({ purchase, isConsumable: false });
-              useSettingsStore.getState().setPremium(true);
-              updateSub.remove();
-              errorSub.remove();
-              resolve(true);
-            }
-          } catch {
-            updateSub.remove();
-            errorSub.remove();
-            resolve(false);
-          }
-        });
-
-        const errorSub = purchaseErrorListener((_err: PurchaseError) => {
-          updateSub.remove();
-          errorSub.remove();
-          resolve(false);
-        });
-
-        // Trigger the purchase request
-        const purchaseParams =
-          Platform.OS === 'android'
-            ? { skus: [PRODUCT_ID] }
-            : { sku: PRODUCT_ID, andDangerouslyFinishTransactionAutomaticallyIOS: false };
-
-        requestPurchase(purchaseParams as any).catch(() => {
-          updateSub.remove();
-          errorSub.remove();
-          resolve(false);
-        });
-      });
-    } catch {
-      return false;
-    } finally {
-      if (connection) {
-        try { await endConnection(); } catch { /* ignore */ }
-      }
+      const pkg = await PurchaseService.getPackage();
+      if (!pkg) return false;
+      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      const active = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      if (active) useSettingsStore.getState().setPremium(true);
+      return active;
+    } catch (e: any) {
+      if (e?.userCancelled) return false;
+      throw e;
     }
   },
 
-  /**
-   * Restore previous purchases (App Store / Play Store).
-   * Returns true if a valid premium purchase was found.
-   */
   async restore(): Promise<boolean> {
     if (__DEV__) return false;
-
-    let connection = false;
     try {
-      await initConnection();
-      connection = true;
-
-      const purchases = await getAvailablePurchases();
-      const hasPremium = purchases.some((p) => p.productId === PRODUCT_ID);
-
-      if (hasPremium) {
-        useSettingsStore.getState().setPremium(true);
-      }
-
-      return hasPremium;
+      const customerInfo = await Purchases.restorePurchases();
+      const active = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      if (active) useSettingsStore.getState().setPremium(true);
+      return active;
     } catch {
       return false;
-    } finally {
-      if (connection) {
-        try { await endConnection(); } catch { /* ignore */ }
-      }
+    }
+  },
+
+  async checkStatus(): Promise<void> {
+    if (__DEV__) return;
+    try {
+      const customerInfo = await Purchases.getCustomerInfo();
+      const active = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      useSettingsStore.getState().setPremium(active);
+    } catch {}
+  },
+
+  async loginAsUser(userId: string): Promise<boolean> {
+    try {
+      const { customerInfo } = await Purchases.logIn(userId);
+      const active = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      if (active) useSettingsStore.getState().setPremium(true);
+      return active;
+    } catch {
+      return false;
     }
   },
 
   getProductId(): string {
-    return PRODUCT_ID;
+    return 'com.darchevert.eisenhower.premium';
   },
 };

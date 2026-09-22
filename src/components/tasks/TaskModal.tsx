@@ -17,6 +17,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme/Theme';
 import { useTaskStore } from '@/store/taskStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { useInterstitial } from '@/ads/useInterstitial';
+import { AdConfig } from '@/ads/AdConfig';
 import { QUADRANT_META } from '@/theme/quadrantThemes';
 import { Spacing, Radius, Shadow, Typography, MIN_TOUCH_TARGET } from '@/theme/spacing';
 import { QUADRANT_IDS } from '@/utils/quadrants';
@@ -37,6 +40,11 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
   const addTask = useTaskStore((s) => s.addTask);
   const updateTask = useTaskStore((s) => s.updateTask);
   const deleteTask = useTaskStore((s) => s.deleteTask);
+  const isPremium = useSettingsStore((s) => s.isPremium);
+  const sessionCount = useSettingsStore((s) => s.sessionCompletedCount);
+  const incrementCompleted = useSettingsStore((s) => s.incrementSessionCompleted);
+  const resetCount = useSettingsStore((s) => s.resetSessionCompleted);
+  const { showIfReady } = useInterstitial();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -84,6 +92,7 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
   function handleSave() {
     if (!title.trim()) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const wasCompleted = isEditing && !!task?.completed;
     if (isEditing && task) {
       updateTask(task.id, {
         title: title.trim(),
@@ -100,6 +109,14 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
         dueDate: dueDate?.getTime(),
         recurrence,
       });
+    }
+    if (wasCompleted && !isPremium) {
+      const newCount = sessionCount + 1;
+      incrementCompleted();
+      if (newCount >= AdConfig.interstitialTriggerCount) {
+        resetCount();
+        setTimeout(() => showIfReady(), 500);
+      }
     }
     onClose();
   }
@@ -142,17 +159,37 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
             {/* Handle */}
             <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
-            {/* Header */}
+            {/* Header — Taska style: Cancel | Quadrant icon+label | Add */}
             <View style={styles.sheetHeader}>
-              <Text style={[styles.sheetTitle, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
-                {isEditing ? t('tasks.editTask') : t('tasks.newTask')}
-              </Text>
               <TouchableOpacity
                 onPress={onClose}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                style={[styles.closeBtn, { backgroundColor: colors.surfaceSecondary }]}
+                style={[styles.headerPillBtn, { backgroundColor: colors.surfaceSecondary }]}
               >
-                <Ionicons name="close" size={16} color={colors.textSecondary} />
+                <Text style={[styles.headerPillText, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.1}>
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.headerCenter}>
+                <Ionicons name={QUADRANT_META[quadrant].icon as any} size={15} color={selectedStyle.accent} />
+                <Text style={[styles.sheetTitle, { color: colors.text }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+                  {t(`quadrants.${quadrant}.label`)}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={handleSave}
+                disabled={!title.trim()}
+                style={[
+                  styles.headerPillBtn,
+                  { backgroundColor: title.trim() ? selectedStyle.accent : colors.border },
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.headerPillText, { color: '#FFFFFF' }]} maxFontSizeMultiplier={1.1}>
+                  {isEditing ? t('tasks.saveChanges') : t('tasks.addTask')}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -325,30 +362,20 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
               </View>
             </ScrollView>
 
-            {/* Actions */}
-            <View style={[styles.actions, { borderTopColor: colors.borderLight }]}>
-              {isEditing && (
+            {/* Delete action (edit mode only) */}
+            {isEditing && (
+              <View style={[styles.actions, { borderTopColor: colors.borderLight }]}>
                 <TouchableOpacity
-                  style={[styles.deleteBtn, { borderColor: colors.borderLight }]}
+                  style={[styles.deleteBtn, { borderColor: colors.error + '40', backgroundColor: colors.error + '10' }]}
                   onPress={handleDelete}
                 >
-                  <Ionicons name="trash-outline" size={18} color={colors.error} />
+                  <Ionicons name="trash-outline" size={16} color={colors.error} />
+                  <Text style={[styles.deleteBtnText, { color: colors.error }]} maxFontSizeMultiplier={1.1}>
+                    {t('tasks.deleteTask')}
+                  </Text>
                 </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={[
-                  styles.saveBtn,
-                  { backgroundColor: title.trim() ? selectedStyle.accent : colors.border },
-                ]}
-                onPress={handleSave}
-                disabled={!title.trim()}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.saveBtnText} maxFontSizeMultiplier={1.1}>
-                  {isEditing ? t('tasks.saveChanges') : t('tasks.addTask')}
-                </Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            )}
           </Animated.View>
         </KeyboardAvoidingView>
       </Modal>
@@ -429,17 +456,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.xs,
   },
-  sheetTitle: { ...Typography.headline },
-  closeBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  headerCenter: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    minWidth: 0,
+  },
+  headerPillBtn: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    minHeight: 34,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerPillText: { ...Typography.footnote, fontWeight: '600' },
+  sheetTitle: { ...Typography.subheadSemi, flex: 1, textAlign: 'center' },
   content: { paddingHorizontal: Spacing.xl, paddingBottom: Spacing.md, gap: Spacing.sm },
   titleInput: {
     ...Typography.body,
@@ -500,28 +538,22 @@ const styles = StyleSheet.create({
   },
   recurrenceBtnText: { ...Typography.caption1, fontWeight: '600' },
   actions: {
-    flexDirection: 'row',
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.md,
-    gap: Spacing.sm,
+    paddingBottom: Spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   deleteBtn: {
-    width: MIN_TOUCH_TARGET,
-    height: MIN_TOUCH_TARGET,
-    borderRadius: Radius.md,
-    borderWidth: 1.5,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  saveBtn: {
-    flex: 1,
+    gap: Spacing.sm,
     height: MIN_TOUCH_TARGET,
     borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 1,
+    paddingHorizontal: Spacing.lg,
   },
-  saveBtnText: { color: '#FFFFFF', ...Typography.callout, fontWeight: '700' },
+  deleteBtnText: { ...Typography.footnote, fontWeight: '600' },
   // iOS date picker overlay
   iosDateBackdrop: {
     flex: 1,
