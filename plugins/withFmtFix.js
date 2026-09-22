@@ -5,7 +5,6 @@ const path = require('path');
 // Patches Pods/fmt/include/fmt/base.h after pod install.
 // Xcode 26+ clang enforces consteval strictly; changing FMT_USE_CONSTEVAL from 1 to 0
 // disables the consteval path that triggers the build failure.
-// Approach taken from expo/expo PR #44230 (closed contributor PR, not yet in build-properties).
 const FMT_FIX_RUBY = `
     # @generated begin expo-fmt-use-consteval-fix
     fmt_base = File.join(installer.sandbox.root.to_s, 'fmt', 'include', 'fmt', 'base.h')
@@ -25,6 +24,28 @@ const FMT_FIX_RUBY = `
     # @generated end expo-fmt-use-consteval-fix
 `;
 
+// Forces REACT_NATIVE_MINOR_VERSION=79 in RNReanimated's GCC_PREPROCESSOR_DEFINITIONS.
+// The podspec sets this via s.xcconfig["OTHER_CFLAGS"] which is not reliably propagated
+// to the pod's own compilation on Xcode 26. Direct build-settings mutation is authoritative.
+const REANIMATED_FIX_RUBY = `
+    # @generated begin expo-reanimated-minor-version-fix
+    installer.pods_project.targets.each do |target|
+      if target.name == 'RNReanimated'
+        target.build_configurations.each do |config|
+          defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
+          defs = ['$(inherited)'] if defs.nil?
+          defs = [defs] if defs.is_a?(String)
+          unless defs.any? { |d| d.include?('REACT_NATIVE_MINOR_VERSION') }
+            defs << 'REACT_NATIVE_MINOR_VERSION=79'
+            puts "expo-reanimated-minor-version-fix: set REACT_NATIVE_MINOR_VERSION=79 for #{config.name}"
+          end
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
+        end
+      end
+    end
+    # @generated end expo-reanimated-minor-version-fix
+`;
+
 module.exports = function withFmtFix(config) {
   return withDangerousMod(config, [
     'ios',
@@ -32,41 +53,38 @@ module.exports = function withFmtFix(config) {
       const podfilePath = path.join(cfg.modRequest.platformProjectRoot, 'Podfile');
       let contents = fs.readFileSync(podfilePath, 'utf8');
 
-      if (contents.includes('expo-fmt-use-consteval-fix')) {
-        process.stderr.write('withFmtFix: already patched, skipping\n');
+      const hasFmtFix = contents.includes('expo-fmt-use-consteval-fix');
+      const hasReanimatedFix = contents.includes('expo-reanimated-minor-version-fix');
+
+      if (hasFmtFix && hasReanimatedFix) {
+        process.stderr.write('withFmtFix: both patches already present, skipping\n');
         return cfg;
       }
 
-      // Find react_native_post_install(...) and inject right after its closing paren line.
-      // This avoids having to parse post_install block boundaries.
+      const toInject = (!hasFmtFix ? FMT_FIX_RUBY : '') + (!hasReanimatedFix ? REANIMATED_FIX_RUBY : '');
+
       const start = contents.indexOf('react_native_post_install');
 
       if (start === -1) {
-        // No react_native_post_install — append a standalone post_install block
         process.stderr.write('withFmtFix: react_native_post_install not found, appending new post_install block\n');
-        contents += `\npost_install do |installer|\n${FMT_FIX_RUBY}\nend\n`;
+        contents += `\npost_install do |installer|\n${toInject}\nend\n`;
         fs.writeFileSync(podfilePath, contents);
         return cfg;
       }
 
-      // Find opening paren
       const openParen = contents.indexOf('(', start);
       if (openParen === -1) {
         process.stderr.write('withFmtFix: ERROR — no opening paren after react_native_post_install\n');
         return cfg;
       }
 
-      // Walk forward to find matching closing paren (handles multi-line call)
       let depth = 0;
       let closingParen = -1;
       for (let i = openParen; i < contents.length; i++) {
         if (contents[i] === '(') depth++;
         else if (contents[i] === ')') {
           depth--;
-          if (depth === 0) {
-            closingParen = i;
-            break;
-          }
+          if (depth === 0) { closingParen = i; break; }
         }
       }
 
@@ -75,16 +93,15 @@ module.exports = function withFmtFix(config) {
         return cfg;
       }
 
-      // Insert after the end of the line containing the closing paren
       let endOfLine = contents.indexOf('\n', closingParen);
       if (endOfLine === -1) endOfLine = contents.length - 1;
 
       const before = contents.slice(0, endOfLine + 1);
       const after = contents.slice(endOfLine + 1);
-      contents = before + FMT_FIX_RUBY + after;
+      contents = before + toInject + after;
 
       fs.writeFileSync(podfilePath, contents);
-      process.stderr.write(`withFmtFix: injected fmt base.h patch after react_native_post_install (char ${closingParen})\n`);
+      process.stderr.write(`withFmtFix: injected patches after react_native_post_install (char ${closingParen})\n`);
       return cfg;
     },
   ]);
