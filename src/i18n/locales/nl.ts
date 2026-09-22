@@ -133,6 +133,7 @@ const nl: Translations = {
     slide4Body: 'Delegeer Q3 (urgent, niet belangrijk) en elimineer Q4 (geen van beide).',
   },
   notifications: {
+    taskReminderTitle: 'Verloopt over 1 uur',
     overdueTitle: 'Achterstallige taken',
     overdueBody: '{{count}} achterstallige taak/taken in je matrix',
   },

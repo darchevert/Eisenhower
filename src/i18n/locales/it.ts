@@ -133,6 +133,7 @@ const it: Translations = {
     slide4Body: 'Delega Q3 (urgente, non importante) ed elimina Q4 (nessuno dei due).',
   },
   notifications: {
+    taskReminderTitle: 'Scade in 1 ora',
     overdueTitle: 'Attività scadute',
     overdueBody: '{{count}} attività scaduta/e nella tua matrice',
   },

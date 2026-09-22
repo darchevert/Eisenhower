@@ -133,6 +133,7 @@ const ko: Translations = {
     slide4Body: 'Q3(긴급하지만 중요하지 않음)은 위임하고, Q4(둘 다 아님)는 제거하세요.',
   },
   notifications: {
+    taskReminderTitle: '1시간 후 마감',
     overdueTitle: '기한 초과 작업',
     overdueBody: '매트릭스에 {{count}}개의 기한 초과 작업이 있습니다',
   },

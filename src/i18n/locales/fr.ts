@@ -140,6 +140,7 @@ const fr: Translations = {
     slide4Body: 'Déléguez Q3 (urgent, pas important) et supprimez Q4 (ni l\'un ni l\'autre).',
   },
   notifications: {
+    taskReminderTitle: 'Échéance dans 1h',
     overdueTitle: 'Tâches en retard',
     overdueBody: '{{count}} tâche(s) en retard dans votre matrice',
   },

@@ -16,7 +16,7 @@ export function useStats(): AppStats {
     weekStart.setDate(weekStart.getDate() - 7);
 
     const completedThisWeek = completed.filter(
-      (t) => t.createdAt >= weekStart.getTime()
+      (t) => (t.completedAt ?? t.createdAt) >= weekStart.getTime()
     ).length;
 
     const completedByQuadrant = QUADRANT_IDS.reduce(
@@ -35,7 +35,7 @@ export function useStats(): AppStats {
     const days = getWeekDays();
     const dailyCompletions = days.map((day) => ({
       date: formatShortDate(day.getTime()),
-      count: completed.filter((t) => isSameDay(t.createdAt, day.getTime())).length,
+      count: completed.filter((t) => isSameDay(t.completedAt ?? t.createdAt, day.getTime())).length,
     }));
 
     // Simple streak: consecutive days with at least 1 completed task
@@ -44,7 +44,7 @@ export function useStats(): AppStats {
     for (let i = 0; i < 30; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const hasTasks = completed.some((t) => isSameDay(t.createdAt, d.getTime()));
+      const hasTasks = completed.some((t) => isSameDay(t.completedAt ?? t.createdAt, d.getTime()));
       if (hasTasks) streakDays++;
       else if (i > 0) break;
     }

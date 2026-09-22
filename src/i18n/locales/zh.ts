@@ -133,6 +133,7 @@ const zh: Translations = {
     slide4Body: '委托Q3（紧急但不重要），删除Q4（两者皆非）。',
   },
   notifications: {
+    taskReminderTitle: '1小时后到期',
     overdueTitle: '逾期任务',
     overdueBody: '您的矩阵中有{{count}}个任务已逾期',
   },

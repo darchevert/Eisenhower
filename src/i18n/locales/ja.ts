@@ -133,6 +133,7 @@ const ja: Translations = {
     slide4Body: 'Q3（緊急だが重要でない）を委任し、Q4（どちらでもない）を排除する。',
   },
   notifications: {
+    taskReminderTitle: '1時間後に締め切り',
     overdueTitle: '期限切れのタスク',
     overdueBody: 'マトリックスに{{count}}件の期限切れタスクがあります',
   },

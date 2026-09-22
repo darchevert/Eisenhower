@@ -133,6 +133,7 @@ const es: Translations = {
     slide4Body: 'Delega Q3 (urgente, no importante) y elimina Q4 (ninguno).',
   },
   notifications: {
+    taskReminderTitle: 'Vence en 1 hora',
     overdueTitle: 'Tareas vencidas',
     overdueBody: '{{count}} tarea(s) vencida(s) en tu matriz',
   },

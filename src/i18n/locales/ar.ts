@@ -133,6 +133,7 @@ const ar: Translations = {
     slide4Body: 'فوّض Q3 (عاجل، غير مهم) واحذف Q4 (لا هذا ولا ذاك).',
   },
   notifications: {
+    taskReminderTitle: 'يستحق خلال ساعة',
     overdueTitle: 'مهام متأخرة',
     overdueBody: '{{count}} مهمة/مهام متأخرة في مصفوفتك',
   },

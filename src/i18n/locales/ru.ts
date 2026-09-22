@@ -133,6 +133,7 @@ const ru: Translations = {
     slide4Body: 'Делегируйте Q3 (срочно, неважно) и устраните Q4 (ни то ни другое).',
   },
   notifications: {
+    taskReminderTitle: 'Срок через 1 час',
     overdueTitle: 'Просроченные задачи',
     overdueBody: '{{count}} просроченная(-ых) задача(-и) в вашей матрице',
   },

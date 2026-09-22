@@ -133,6 +133,7 @@ const de: Translations = {
     slide4Body: 'Delegiere Q3 (dringend, unwichtig) und streiche Q4 (keines von beidem).',
   },
   notifications: {
+    taskReminderTitle: 'Fällig in 1 Stunde',
     overdueTitle: 'Überfällige Aufgaben',
     overdueBody: '{{count}} überfällige Aufgabe(n) in deiner Matrix',
   },

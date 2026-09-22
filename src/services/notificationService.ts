@@ -62,7 +62,7 @@ export const NotificationService = {
     await Notifications.scheduleNotificationAsync({
       identifier,
       content: {
-        title: '⏰ Échéance dans 1h',
+        title: `⏰ ${t('notifications.taskReminderTitle')}`,
         body: task.title,
         data: { taskId: task.id },
       },

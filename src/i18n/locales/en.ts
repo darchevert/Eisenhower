@@ -140,6 +140,7 @@ const en = {
   notifications: {
     overdueTitle: 'Overdue Tasks',
     overdueBody: '{{count}} task(s) overdue in your matrix',
+    taskReminderTitle: 'Due in 1 hour',
   },
   matrices: {
     title: 'My Matrices',

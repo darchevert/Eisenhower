@@ -133,6 +133,7 @@ const pt: Translations = {
     slide4Body: 'Delegue Q3 (urgente, não importante) e elimine Q4 (nenhum dos dois).',
   },
   notifications: {
+    taskReminderTitle: 'Prazo em 1 hora',
     overdueTitle: 'Tarefas atrasadas',
     overdueBody: '{{count}} tarefa(s) atrasada(s) na sua matriz',
   },
