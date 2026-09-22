@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
+import * as Calendar from 'expo-calendar';
 import { ThemeProvider } from '@/theme/Theme';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTaskStore } from '@/store/taskStore';
@@ -24,6 +25,10 @@ function ThemedApp() {
 
   useBadge();
   useAppOpen();
+
+  useEffect(() => {
+    Calendar.requestCalendarPermissionsAsync().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (settingsHydrated) {
