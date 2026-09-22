@@ -50,7 +50,7 @@ interface TaskStore {
   _hasHydrated: boolean;
 
   setHasHydrated: (v: boolean) => void;
-  addTask: (data: Pick<Task, 'title' | 'description' | 'quadrant' | 'dueDate' | 'recurrence'>) => void;
+  addTask: (data: Pick<Task, 'title' | 'description' | 'quadrant' | 'dueDate' | 'recurrence' | 'tags'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   toggleComplete: (id: string) => void;
@@ -93,6 +93,7 @@ export const useTaskStore = create<TaskStore>()(
           matrixId: currentMatrixId,
           order: quadrantTasks.length,
           recurrence: data.recurrence ?? 'none',
+          tags: data.tags,
         };
         set((s) => {
           const next = [...s.tasks, task];

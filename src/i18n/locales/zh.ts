@@ -30,6 +30,8 @@ const zh: Translations = {
     addTask: '添加',
     saveChanges: '保存',
     deleteTask: '删除任务',
+    tags: '标签',
+    tagPlaceholder: '添加标签...',
     deleteConfirmTitle: '删除任务',
     deleteConfirmMsg: '删除"{{title}}"？',
     cancel: '取消',

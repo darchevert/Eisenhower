@@ -36,6 +36,8 @@ const fr: Translations = {
     addTask: 'Ajouter',
     saveChanges: 'Enregistrer',
     deleteTask: 'Supprimer la tâche',
+    tags: 'Étiquettes',
+    tagPlaceholder: 'Ajouter une étiquette...',
     deleteConfirmTitle: 'Supprimer la tâche',
     deleteConfirmMsg: 'Supprimer "{{title}}" ?',
     cancel: 'Annuler',

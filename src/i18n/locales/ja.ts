@@ -30,6 +30,8 @@ const ja: Translations = {
     addTask: '追加',
     saveChanges: '保存',
     deleteTask: 'タスクを削除',
+    tags: 'タグ',
+    tagPlaceholder: 'タグを追加...',
     deleteConfirmTitle: 'タスクを削除',
     deleteConfirmMsg: '「{{title}}」を削除しますか？',
     cancel: 'キャンセル',

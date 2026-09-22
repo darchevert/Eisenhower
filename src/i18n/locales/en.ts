@@ -34,6 +34,8 @@ const en = {
     addTask: 'Add Task',
     saveChanges: 'Save Changes',
     deleteTask: 'Delete Task',
+    tags: 'Tags',
+    tagPlaceholder: 'Add a tag...',
     deleteConfirmTitle: 'Delete task',
     deleteConfirmMsg: 'Delete "{{title}}"?',
     cancel: 'Cancel',

@@ -1,5 +1,6 @@
 import Purchases, {
   LOG_LEVEL,
+  PACKAGE_TYPE,
   type PurchasesOffering,
   type PurchasesPackage,
 } from 'react-native-purchases';
@@ -38,6 +39,32 @@ export const PurchaseService = {
     return offering?.availablePackages[0] ?? null;
   },
 
+  async getPackages(): Promise<{ monthly: PurchasesPackage | null; annual: PurchasesPackage | null; lifetime: PurchasesPackage | null }> {
+    const offering = await PurchaseService.getOffering();
+    const pkgs = offering?.availablePackages ?? [];
+    return {
+      monthly: pkgs.find((p) => p.packageType === PACKAGE_TYPE.MONTHLY) ?? null,
+      annual: pkgs.find((p) => p.packageType === PACKAGE_TYPE.ANNUAL) ?? null,
+      lifetime: pkgs.find((p) => p.packageType === PACKAGE_TYPE.LIFETIME) ?? null,
+    };
+  },
+
+  async purchasePackage(pkg: PurchasesPackage): Promise<boolean> {
+    if (__DEV__) {
+      useSettingsStore.getState().setPremium(true);
+      return true;
+    }
+    try {
+      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      const active = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      if (active) useSettingsStore.getState().setPremium(true);
+      return active;
+    } catch (e: any) {
+      if (e?.userCancelled) return false;
+      throw e;
+    }
+  },
+
   async purchase(): Promise<boolean> {
     if (__DEV__) {
       useSettingsStore.getState().setPremium(true);
@@ -46,10 +73,7 @@ export const PurchaseService = {
     try {
       const pkg = await PurchaseService.getPackage();
       if (!pkg) return false;
-      const { customerInfo } = await Purchases.purchasePackage(pkg);
-      const active = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
-      if (active) useSettingsStore.getState().setPremium(true);
-      return active;
+      return PurchaseService.purchasePackage(pkg);
     } catch (e: any) {
       if (e?.userCancelled) return false;
       throw e;

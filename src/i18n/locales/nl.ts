@@ -30,6 +30,8 @@ const nl: Translations = {
     addTask: 'Toevoegen',
     saveChanges: 'Opslaan',
     deleteTask: 'Taak verwijderen',
+    tags: 'Tags',
+    tagPlaceholder: 'Tag toevoegen...',
     deleteConfirmTitle: 'Taak verwijderen',
     deleteConfirmMsg: '"{{title}}" verwijderen?',
     cancel: 'Annuleren',

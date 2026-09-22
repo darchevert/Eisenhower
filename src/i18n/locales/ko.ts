@@ -30,6 +30,8 @@ const ko: Translations = {
     addTask: '추가',
     saveChanges: '저장',
     deleteTask: '삭제',
+    tags: '태그',
+    tagPlaceholder: '태그 추가...',
     deleteConfirmTitle: '삭제',
     deleteConfirmMsg: '"{{title}}"을 삭제할까요?',
     cancel: '취소',

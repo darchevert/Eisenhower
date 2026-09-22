@@ -30,6 +30,8 @@ const ar: Translations = {
     addTask: 'إضافة',
     saveChanges: 'حفظ',
     deleteTask: 'حذف المهمة',
+    tags: 'الوسوم',
+    tagPlaceholder: 'إضافة وسم...',
     deleteConfirmTitle: 'حذف المهمة',
     deleteConfirmMsg: 'حذف "{{title}}"؟',
     cancel: 'إلغاء',

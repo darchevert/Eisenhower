@@ -52,6 +52,8 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [recurrence, setRecurrence] = useState<RecurrenceType>('none');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
 
   const slideAnim = useRef(new Animated.Value(400)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -67,13 +69,16 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
         setQuadrant(task.quadrant);
         setDueDate(task.dueDate ? new Date(task.dueDate) : null);
         setRecurrence(task.recurrence ?? 'none');
+        setTags(task.tags ?? []);
       } else {
         setTitle('');
         setDescription('');
         setQuadrant(defaultQuadrant);
         setDueDate(null);
         setRecurrence('none');
+        setTags([]);
       }
+      setTagInput('');
       Animated.parallel([
         Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, damping: 22, stiffness: 220 }),
         Animated.timing(opacityAnim, { toValue: 1, duration: 180, useNativeDriver: true }),
@@ -100,6 +105,7 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
         quadrant,
         dueDate: dueDate?.getTime(),
         recurrence,
+        tags: tags.length > 0 ? tags : undefined,
       });
     } else {
       addTask({
@@ -108,6 +114,7 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
         quadrant,
         dueDate: dueDate?.getTime(),
         recurrence,
+        tags: tags.length > 0 ? tags : undefined,
       });
     }
     if (wasCompleted && !isPremium) {
@@ -360,6 +367,58 @@ export function TaskModal({ visible, task, defaultQuadrant = 'q1', onClose }: Ta
                   );
                 })}
               </View>
+              {/* Tags */}
+              <Text style={[styles.sectionLabel, { color: colors.textTertiary }]} maxFontSizeMultiplier={1.1}>
+                {t('tasks.tags')}
+              </Text>
+              <View style={styles.tagInputRow}>
+                <TextInput
+                  style={[styles.tagInput, { color: colors.text, borderColor: colors.borderLight, backgroundColor: colors.surfaceSecondary }]}
+                  placeholder={t('tasks.tagPlaceholder')}
+                  placeholderTextColor={colors.textTertiary}
+                  value={tagInput}
+                  onChangeText={setTagInput}
+                  returnKeyType="done"
+                  maxLength={30}
+                  onSubmitEditing={() => {
+                    const tag = tagInput.trim().toLowerCase();
+                    if (tag && !tags.includes(tag)) {
+                      setTags([...tags, tag]);
+                    }
+                    setTagInput('');
+                  }}
+                  maxFontSizeMultiplier={1.2}
+                />
+                <TouchableOpacity
+                  style={[styles.tagAddBtn, { backgroundColor: selectedStyle.accent }]}
+                  onPress={() => {
+                    const tag = tagInput.trim().toLowerCase();
+                    if (tag && !tags.includes(tag)) {
+                      setTags([...tags, tag]);
+                    }
+                    setTagInput('');
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="add" size={18} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+              {tags.length > 0 && (
+                <View style={styles.tagChips}>
+                  {tags.map((tag) => (
+                    <TouchableOpacity
+                      key={tag}
+                      style={[styles.tagChip, { backgroundColor: selectedStyle.accent + '20', borderColor: selectedStyle.accent + '60' }]}
+                      onPress={() => setTags(tags.filter((t) => t !== tag))}
+                    >
+                      <Text style={[styles.tagChipText, { color: selectedStyle.accent }]} maxFontSizeMultiplier={1.1}>
+                        {tag}
+                      </Text>
+                      <Ionicons name="close" size={12} color={selectedStyle.accent} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </ScrollView>
 
             {/* Delete action (edit mode only) */}
@@ -568,4 +627,32 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     overflow: 'hidden',
   },
+  tagInputRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  tagInput: {
+    flex: 1,
+    ...Typography.callout,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    minHeight: 38,
+  },
+  tagAddBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tagChips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs, marginTop: Spacing.xs },
+  tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  tagChipText: { ...Typography.caption1, fontWeight: '600' },
 });

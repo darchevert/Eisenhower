@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   SectionList,
+  ScrollView,
   TouchableOpacity,
   TextInput,
 } from 'react-native';
@@ -60,10 +61,22 @@ export function ListScreen() {
   const sortBy = useSettingsStore((s) => s.sortBy);
   const setSortBy = useSettingsStore((s) => s.setSortBy);
 
+  const allTasks = useTaskStore((s) => s.tasks);
+  const currentMatrixId = useTaskStore((s) => s.currentMatrixId);
+
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [addingToQuadrant, setAddingToQuadrant] = useState<QuadrantId | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    allTasks
+      .filter((tk) => tk.matrixId === currentMatrixId)
+      .forEach((tk) => tk.tags?.forEach((tag) => tagSet.add(tag)));
+    return Array.from(tagSet).sort();
+  }, [allTasks, currentMatrixId]);
 
   const sections = useMemo(() => {
     return QUADRANT_IDS.map((id) => {
@@ -77,10 +90,13 @@ export function ListScreen() {
             (tk.description ?? '').toLowerCase().includes(q)
         );
       }
+      if (selectedTag) {
+        tasks = tasks.filter((tk) => tk.tags?.includes(selectedTag));
+      }
       tasks = sortTasks(tasks, sortBy);
       return { id, data: tasks };
     }).filter((s) => s.data.length > 0);
-  }, [getTasksByQuadrant, showCompleted, searchQuery, sortBy]);
+  }, [getTasksByQuadrant, showCompleted, searchQuery, selectedTag, sortBy]);
 
   const totalActive = QUADRANT_IDS.reduce(
     (acc, id) => acc + getTasksByQuadrant(id).filter((tk) => !tk.completed).length,
@@ -239,6 +255,52 @@ export function ListScreen() {
           )}
         </View>
       </View>
+
+      {/* Tag filter bar */}
+      {allTags.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tagBar}
+          keyboardShouldPersistTaps="handled"
+        >
+          <TouchableOpacity
+            style={[
+              styles.tagChip,
+              !selectedTag
+                ? { backgroundColor: colors.primary }
+                : { backgroundColor: colors.surfaceSecondary, borderColor: colors.border },
+            ]}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setSelectedTag(null);
+            }}
+          >
+            <Text style={[styles.tagChipText, { color: !selectedTag ? '#fff' : colors.textSecondary }]}>
+              Tous
+            </Text>
+          </TouchableOpacity>
+          {allTags.map((tag) => (
+            <TouchableOpacity
+              key={tag}
+              style={[
+                styles.tagChip,
+                selectedTag === tag
+                  ? { backgroundColor: colors.primary }
+                  : { backgroundColor: colors.surfaceSecondary, borderColor: colors.border },
+              ]}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setSelectedTag(selectedTag === tag ? null : tag);
+              }}
+            >
+              <Text style={[styles.tagChipText, { color: selectedTag === tag ? '#fff' : colors.textSecondary }]}>
+                {tag}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
 
       {hasSearchResults ? (
         <View style={styles.emptyContainer}>
@@ -409,4 +471,17 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  tagBar: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.xs,
+    flexDirection: 'row',
+  },
+  tagChip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 5,
+    borderRadius: Radius.full,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  tagChipText: { ...Typography.caption1, fontWeight: '500' },
 });

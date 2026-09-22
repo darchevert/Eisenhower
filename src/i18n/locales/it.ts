@@ -30,6 +30,8 @@ const it: Translations = {
     addTask: 'Aggiungi',
     saveChanges: 'Salva',
     deleteTask: 'Elimina compito',
+    tags: 'Etichette',
+    tagPlaceholder: 'Aggiungi etichetta...',
     deleteConfirmTitle: 'Elimina compito',
     deleteConfirmMsg: 'Eliminare "{{title}}"?',
     cancel: 'Annulla',

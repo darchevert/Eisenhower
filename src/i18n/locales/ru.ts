@@ -30,6 +30,8 @@ const ru: Translations = {
     addTask: 'Добавить',
     saveChanges: 'Сохранить',
     deleteTask: 'Удалить задачу',
+    tags: 'Теги',
+    tagPlaceholder: 'Добавить тег...',
     deleteConfirmTitle: 'Удалить задачу',
     deleteConfirmMsg: 'Удалить "{{title}}"?',
     cancel: 'Отмена',
