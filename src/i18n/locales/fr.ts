@@ -126,6 +126,18 @@ const fr: Translations = {
       noAdsDesc: 'Zéro distraction',
     },
   },
+  matrices: {
+    title: 'Mes Matrices',
+    newMatrix: 'Nouvelle Matrice',
+    namePlaceholder: 'Nom de la matrice...',
+    create: 'Créer',
+    rename: 'Renommer',
+    delete: 'Supprimer',
+    deleteConfirm: 'Supprimer "{{name}}" ? Toutes ses tâches seront supprimées.',
+    longPressHint: 'Appui long pour renommer ou supprimer',
+    premiumLimit: 'Les matrices multiples nécessitent Premium.',
+    renameMatrix: 'Renommer la matrice',
+  },
   common: {
     cancel: 'Annuler',
     ok: 'OK',

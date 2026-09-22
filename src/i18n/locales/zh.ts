@@ -119,6 +119,18 @@ const zh: Translations = {
       noAdsDesc: '完全无干扰',
     },
   },
+  matrices: {
+    title: '我的矩阵',
+    newMatrix: '新建矩阵',
+    namePlaceholder: '矩阵名称...',
+    create: '创建',
+    rename: '重命名',
+    delete: '删除',
+    deleteConfirm: '删除"{{name}}"？其所有任务将被删除。',
+    longPressHint: '长按重命名或删除',
+    premiumLimit: '多矩阵功能需要高级版。',
+    renameMatrix: '重命名矩阵',
+  },
   common: { cancel: '取消', ok: '确定', done: '完成', premium: '高级版' },
   date: { today: '今天', tomorrow: '明天', yesterday: '昨天' },
   share: {

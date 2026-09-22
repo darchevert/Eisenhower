@@ -119,6 +119,18 @@ const ja: Translations = {
       noAdsDesc: '完全に集中できる環境',
     },
   },
+  matrices: {
+    title: 'マイマトリックス',
+    newMatrix: '新しいマトリックス',
+    namePlaceholder: 'マトリックス名...',
+    create: '作成',
+    rename: '名前を変更',
+    delete: '削除',
+    deleteConfirm: '"{{name}}"を削除しますか？すべてのタスクが削除されます。',
+    longPressHint: '長押しで名前変更または削除',
+    premiumLimit: '複数のマトリックスにはプレミアムが必要です。',
+    renameMatrix: 'マトリックスの名前を変更',
+  },
   common: { cancel: 'キャンセル', ok: 'OK', done: '完了', premium: 'プレミアム' },
   date: { today: '今日', tomorrow: '明日', yesterday: '昨日' },
   share: {

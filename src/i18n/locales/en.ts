@@ -124,6 +124,18 @@ const en = {
       noAdsDesc: 'Completely distraction-free',
     },
   },
+  matrices: {
+    title: 'My Matrices',
+    newMatrix: 'New Matrix',
+    namePlaceholder: 'Matrix name...',
+    create: 'Create',
+    rename: 'Rename',
+    delete: 'Delete',
+    deleteConfirm: 'Delete "{{name}}"? All its tasks will be deleted.',
+    longPressHint: 'Long press to rename or delete',
+    premiumLimit: 'Multiple matrices require Premium.',
+    renameMatrix: 'Rename Matrix',
+  },
   common: {
     cancel: 'Cancel',
     ok: 'OK',

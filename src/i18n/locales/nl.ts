@@ -119,6 +119,18 @@ const nl: Translations = {
       noAdsDesc: 'Volledig afleidingsvrij',
     },
   },
+  matrices: {
+    title: 'Mijn Matrices',
+    newMatrix: 'Nieuwe Matrix',
+    namePlaceholder: 'Naam van de matrix...',
+    create: 'Aanmaken',
+    rename: 'Hernoemen',
+    delete: 'Verwijderen',
+    deleteConfirm: '"{{name}}" verwijderen? Alle taken worden verwijderd.',
+    longPressHint: 'Lang indrukken om te hernoemen of verwijderen',
+    premiumLimit: 'Meerdere matrices vereisen Premium.',
+    renameMatrix: 'Matrix hernoemen',
+  },
   common: { cancel: 'Annuleren', ok: 'OK', done: 'Klaar', premium: 'Premium' },
   date: { today: 'Vandaag', tomorrow: 'Morgen', yesterday: 'Gisteren' },
   share: {

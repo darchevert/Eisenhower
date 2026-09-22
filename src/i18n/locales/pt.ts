@@ -119,6 +119,18 @@ const pt: Translations = {
       noAdsDesc: 'Sem distrações',
     },
   },
+  matrices: {
+    title: 'Minhas Matrizes',
+    newMatrix: 'Nova Matriz',
+    namePlaceholder: 'Nome da matriz...',
+    create: 'Criar',
+    rename: 'Renomear',
+    delete: 'Excluir',
+    deleteConfirm: 'Excluir "{{name}}"? Todas as tarefas serão excluídas.',
+    longPressHint: 'Pressione longo para renomear ou excluir',
+    premiumLimit: 'Várias matrizes requerem Premium.',
+    renameMatrix: 'Renomear Matriz',
+  },
   common: { cancel: 'Cancelar', ok: 'OK', done: 'Feito', premium: 'Premium' },
   date: { today: 'Hoje', tomorrow: 'Amanhã', yesterday: 'Ontem' },
   share: {

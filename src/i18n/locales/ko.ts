@@ -119,6 +119,18 @@ const ko: Translations = {
       noAdsDesc: '완전히 집중할 수 있는 환경',
     },
   },
+  matrices: {
+    title: '내 매트릭스',
+    newMatrix: '새 매트릭스',
+    namePlaceholder: '매트릭스 이름...',
+    create: '생성',
+    rename: '이름 변경',
+    delete: '삭제',
+    deleteConfirm: '"{{name}}"을(를) 삭제하시겠습니까? 모든 작업이 삭제됩니다.',
+    longPressHint: '길게 눌러 이름 변경 또는 삭제',
+    premiumLimit: '여러 매트릭스를 사용하려면 Premium이 필요합니다.',
+    renameMatrix: '매트릭스 이름 변경',
+  },
   common: { cancel: '취소', ok: '확인', done: '완료', premium: '프리미엄' },
   date: { today: '오늘', tomorrow: '내일', yesterday: '어제' },
   share: {

@@ -119,6 +119,18 @@ const de: Translations = {
       noAdsDesc: 'Völlig ablenkungsfrei',
     },
   },
+  matrices: {
+    title: 'Meine Matrizen',
+    newMatrix: 'Neue Matrix',
+    namePlaceholder: 'Matrixname...',
+    create: 'Erstellen',
+    rename: 'Umbenennen',
+    delete: 'Löschen',
+    deleteConfirm: '"{{name}}" löschen? Alle Aufgaben werden gelöscht.',
+    longPressHint: 'Lang drücken zum Umbenennen oder Löschen',
+    premiumLimit: 'Mehrere Matrizen erfordern Premium.',
+    renameMatrix: 'Matrix umbenennen',
+  },
   common: { cancel: 'Abbrechen', ok: 'OK', done: 'Erledigt', premium: 'Premium' },
   date: { today: 'Heute', tomorrow: 'Morgen', yesterday: 'Gestern' },
   share: {

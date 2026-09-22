@@ -119,6 +119,18 @@ const ru: Translations = {
       noAdsDesc: 'Полная концентрация',
     },
   },
+  matrices: {
+    title: 'Мои Матрицы',
+    newMatrix: 'Новая Матрица',
+    namePlaceholder: 'Название матрицы...',
+    create: 'Создать',
+    rename: 'Переименовать',
+    delete: 'Удалить',
+    deleteConfirm: 'Удалить "{{name}}"? Все задачи будут удалены.',
+    longPressHint: 'Удерживайте для переименования или удаления',
+    premiumLimit: 'Несколько матриц требуют Premium.',
+    renameMatrix: 'Переименовать матрицу',
+  },
   common: { cancel: 'Отмена', ok: 'OK', done: 'Готово', premium: 'Premium' },
   date: { today: 'Сегодня', tomorrow: 'Завтра', yesterday: 'Вчера' },
   share: {

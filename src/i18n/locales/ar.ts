@@ -119,6 +119,18 @@ const ar: Translations = {
       noAdsDesc: 'بيئة خالية من الإلهاء',
     },
   },
+  matrices: {
+    title: 'مصفوفاتي',
+    newMatrix: 'مصفوفة جديدة',
+    namePlaceholder: 'اسم المصفوفة...',
+    create: 'إنشاء',
+    rename: 'إعادة تسمية',
+    delete: 'حذف',
+    deleteConfirm: 'حذف "{{name}}"؟ سيتم حذف جميع مهامه.',
+    longPressHint: 'اضغط مطولاً لإعادة التسمية أو الحذف',
+    premiumLimit: 'تتطلب المصفوفات المتعددة Premium.',
+    renameMatrix: 'إعادة تسمية المصفوفة',
+  },
   common: { cancel: 'إلغاء', ok: 'موافق', done: 'تم', premium: 'مميز' },
   date: { today: 'اليوم', tomorrow: 'غداً', yesterday: 'أمس' },
   share: {

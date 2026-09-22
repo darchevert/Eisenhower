@@ -15,10 +15,12 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme/Theme';
 import { QuadrantCard } from '@/components/matrix/QuadrantCard';
 import { TaskModal } from '@/components/tasks/TaskModal';
 import { WeeklyReviewModal } from '@/components/tasks/WeeklyReviewModal';
+import { MatrixPickerSheet } from '@/components/matrix/MatrixPickerSheet';
 import { BannerAd } from '@/ads/BannerAd';
 import { useTaskStore } from '@/store/taskStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -30,6 +32,7 @@ import type { QuadrantId, Task } from '@/types';
 
 export function MatrixScreen() {
   const { colors } = useTheme();
+  const navigation = useNavigation<any>();
   const fabScale = useSharedValue(1);
   const fabAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: fabScale.value }],
@@ -40,6 +43,7 @@ export function MatrixScreen() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [exporting, setExporting] = useState(false);
   const [reviewVisible, setReviewVisible] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
   const hasShownReview = useRef(false);
 
   const matrices = useTaskStore((s) => s.matrices);
@@ -140,8 +144,16 @@ export function MatrixScreen() {
           />
         </TouchableOpacity>
 
-        {/* Center: matrix name */}
-        <View style={styles.headerCenter}>
+        {/* Center: matrix name — tappable to switch */}
+        <TouchableOpacity
+          style={styles.headerCenter}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setPickerVisible(true);
+          }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          activeOpacity={0.7}
+        >
           <Text
             style={[styles.matrixName, { color: colors.text }]}
             numberOfLines={1}
@@ -149,7 +161,8 @@ export function MatrixScreen() {
           >
             {currentMatrix?.name ?? 'My Matrix'}
           </Text>
-        </View>
+          <Ionicons name="chevron-down" size={13} color={colors.textTertiary} style={styles.matrixChevron} />
+        </TouchableOpacity>
 
         {/* Right: export + add */}
         <View style={styles.headerRight}>
@@ -264,6 +277,12 @@ export function MatrixScreen() {
         visible={reviewVisible}
         onClose={() => setReviewVisible(false)}
       />
+
+      <MatrixPickerSheet
+        visible={pickerVisible}
+        onClose={() => setPickerVisible(false)}
+        onNavigatePremium={() => navigation.navigate('Premium')}
+      />
     </SafeAreaView>
   );
 }
@@ -281,7 +300,9 @@ const styles = StyleSheet.create({
   },
   headerCenter: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     minWidth: 0,
   },
   headerRight: {
@@ -293,6 +314,9 @@ const styles = StyleSheet.create({
   matrixName: {
     ...Typography.headline,
     fontWeight: '700',
+  },
+  matrixChevron: {
+    marginLeft: 3,
   },
   dateText: {
     ...Typography.footnote,
