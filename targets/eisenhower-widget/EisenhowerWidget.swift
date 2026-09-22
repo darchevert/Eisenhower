@@ -1,5 +1,6 @@
 import WidgetKit
 import SwiftUI
+import EventKit
 
 // MARK: - Data
 
@@ -938,6 +939,475 @@ struct BoardWidget: Widget {
     }
     .configurationDisplayName("Tableau de bord")
     .description("Calendrier et vue complète de toutes les tâches.")
+    .supportedFamilies([.systemLarge])
+  }
+}
+
+// MARK: - EventKit helpers
+
+private let ekStore = EKEventStore()
+
+private func calendarAuthorized() -> Bool {
+  let status = EKEventStore.authorizationStatus(for: .event)
+  if #available(iOS 17, *) { return status == .fullAccess }
+  return status == .authorized
+}
+
+private struct CalEvent {
+  let title: String
+  let startDate: Date
+  let allDay: Bool
+  let color: Color
+}
+
+private func loadMonthEvents(for date: Date) -> [Date: [CalEvent]] {
+  guard calendarAuthorized() else { return [:] }
+  let cal = Calendar.current
+  var comps = cal.dateComponents([.year, .month], from: date)
+  comps.day = 1
+  guard let start = cal.date(from: comps),
+        let end = cal.date(byAdding: .month, value: 1, to: start) else { return [:] }
+  let pred = ekStore.predicateForEvents(startDate: start, endDate: end, calendars: nil)
+  var byDay: [Date: [CalEvent]] = [:]
+  for ev in ekStore.events(matching: pred) {
+    let dayStart = cal.startOfDay(for: ev.startDate)
+    let color = Color(UIColor(cgColor: ev.calendar.cgColor))
+    byDay[dayStart, default: []].append(
+      CalEvent(title: ev.title ?? "", startDate: ev.startDate, allDay: ev.isAllDay, color: color)
+    )
+  }
+  return byDay
+}
+
+// MARK: - CalendarEntry + CalendarProvider
+
+struct CalendarEntry: TimelineEntry {
+  let date: Date
+  let data: WidgetData
+  let eventsByDay: [Date: [CalEvent]]
+}
+
+struct CalendarProvider: TimelineProvider {
+  func placeholder(in context: Context) -> CalendarEntry {
+    CalendarEntry(date: Date(), data: placeholderData(), eventsByDay: [:])
+  }
+  func getSnapshot(in context: Context, completion: @escaping (CalendarEntry) -> Void) {
+    completion(CalendarEntry(date: Date(), data: loadWidgetData(), eventsByDay: loadMonthEvents(for: Date())))
+  }
+  func getTimeline(in context: Context, completion: @escaping (Timeline<CalendarEntry>) -> Void) {
+    let entry = CalendarEntry(date: Date(), data: loadWidgetData(), eventsByDay: loadMonthEvents(for: Date()))
+    let next = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
+    completion(Timeline(entries: [entry], policy: .after(next)))
+  }
+}
+
+// MARK: - Shared calendar grid view (with event dots)
+
+private struct CalGridView: View {
+  let entry: CalendarEntry
+  let style: CalGridStyle
+
+  enum CalGridStyle { case dots, bloc, classique }
+
+  private let cal = Calendar.current
+  private let letters = ["D", "L", "M", "M", "J", "V", "S"]
+
+  private var today: Int { cal.component(.day, from: entry.date) }
+
+  private var days: [Int?] {
+    var comps = cal.dateComponents([.year, .month], from: entry.date)
+    comps.day = 1
+    guard let first = cal.date(from: comps) else { return [] }
+    let weekday = cal.component(.weekday, from: first) - 1
+    let range = cal.range(of: .day, in: .month, for: entry.date)!
+    var result: [Int?] = Array(repeating: nil, count: weekday)
+    result += (1...range.count).map { Optional($0) }
+    return result
+  }
+
+  private func events(for day: Int) -> [CalEvent] {
+    var comps = cal.dateComponents([.year, .month], from: entry.date)
+    comps.day = day
+    guard let d = cal.date(from: comps) else { return [] }
+    return entry.eventsByDay[cal.startOfDay(for: d)] ?? []
+  }
+
+  var body: some View {
+    let rows = days.chunks(of: 7)
+    VStack(alignment: .leading, spacing: 2) {
+      // Day-of-week header
+      HStack(spacing: 0) {
+        ForEach(letters, id: \.self) { l in
+          Text(l)
+            .font(.system(size: style == .classique ? 10 : 8, weight: .medium))
+            .foregroundColor(textSecondaryAdaptive)
+            .frame(maxWidth: .infinity)
+        }
+      }
+      // Day rows
+      ForEach(0..<rows.count, id: \.self) { r in
+        HStack(spacing: 0) {
+          ForEach(0..<7, id: \.self) { c in
+            let idx = r * 7 + c
+            let day = idx < days.count ? days[idx] : nil
+            let evs = day.map { events(for: $0) } ?? []
+            let isToday = day.map { $0 == today } ?? false
+
+            VStack(spacing: 1) {
+              ZStack {
+                if isToday {
+                  Circle().fill(q2Color).frame(width: style == .classique ? 22 : 16, height: style == .classique ? 22 : 16)
+                } else if style == .bloc && !evs.isEmpty {
+                  RoundedRectangle(cornerRadius: 3)
+                    .fill(evs[0].color.opacity(0.25))
+                    .frame(height: style == .classique ? 22 : 16)
+                }
+                Text(day.map { "\($0)" } ?? "")
+                  .font(.system(size: style == .classique ? 12 : 9))
+                  .foregroundColor(isToday ? .white : textPrimaryAdaptive)
+              }
+              if style != .bloc {
+                // Dots below day
+                HStack(spacing: 2) {
+                  ForEach(Array(evs.prefix(3).enumerated()), id: \.offset) { _, ev in
+                    Circle().fill(ev.color).frame(width: 3, height: 3)
+                  }
+                }
+                .frame(height: 4)
+              }
+            }
+            .frame(maxWidth: .infinity)
+          }
+        }
+      }
+    }
+  }
+}
+
+// MARK: - Monthly Calendar — Default (event dots)
+
+struct MonthCalDefaultEntryView: View {
+  let entry: CalendarEntry
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Text(monthYearFormatter.string(from: entry.date).capitalized)
+        .font(.system(size: 12, weight: .bold))
+        .foregroundColor(textPrimaryAdaptive)
+      CalGridView(entry: entry, style: .dots)
+      if !calendarAuthorized() {
+        Text("⚠ Accès calendrier requis")
+          .font(.system(size: 9))
+          .foregroundColor(textSecondaryAdaptive)
+      }
+      Spacer(minLength: 0)
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+  }
+}
+
+struct MonthCalDefaultWidget: Widget {
+  let kind = "EisenhowerMonthDefault"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: CalendarProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        MonthCalDefaultEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        MonthCalDefaultEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Calendrier mensuel")
+    .description("Calendrier du mois avec événements.")
+    .supportedFamilies([.systemMedium])
+  }
+}
+
+// MARK: - Monthly Calendar — Bloc (event day blocks)
+
+struct MonthCalBlocEntryView: View {
+  let entry: CalendarEntry
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Text(monthYearFormatter.string(from: entry.date).capitalized)
+        .font(.system(size: 12, weight: .bold))
+        .foregroundColor(textPrimaryAdaptive)
+      CalGridView(entry: entry, style: .bloc)
+      Spacer(minLength: 0)
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+  }
+}
+
+struct MonthCalBlocWidget: Widget {
+  let kind = "EisenhowerMonthBloc"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: CalendarProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        MonthCalBlocEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        MonthCalBlocEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Calendrier mensuel — Bloc")
+    .description("Calendrier avec blocs colorés pour les jours avec événements.")
+    .supportedFamilies([.systemMedium])
+  }
+}
+
+// MARK: - Monthly Calendar — Classique
+
+struct MonthCalClassiqueEntryView: View {
+  let entry: CalendarEntry
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      HStack {
+        Text(monthYearFormatter.string(from: entry.date).capitalized)
+          .font(.system(size: 13, weight: .bold))
+          .foregroundColor(textPrimaryAdaptive)
+        Spacer()
+        Text("\(Calendar.current.component(.year, from: entry.date))")
+          .font(.system(size: 11))
+          .foregroundColor(textSecondaryAdaptive)
+      }
+      CalGridView(entry: entry, style: .classique)
+      Spacer(minLength: 0)
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+  }
+}
+
+struct MonthCalClassiqueWidget: Widget {
+  let kind = "EisenhowerMonthClassique"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: CalendarProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        MonthCalClassiqueEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        MonthCalClassiqueEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Calendrier mensuel — Classique")
+    .description("Calendrier épuré style classique.")
+    .supportedFamilies([.systemSmall, .systemMedium])
+  }
+}
+
+// MARK: - Schedule Widget (Emploi du temps)
+
+private let timeFormatter: DateFormatter = {
+  let f = DateFormatter()
+  f.dateFormat = "HH:mm"
+  return f
+}()
+
+struct ScheduleEntryView: View {
+  let entry: CalendarEntry
+  @Environment(\.widgetFamily) private var family
+
+  private var todayEvents: [CalEvent] {
+    let start = Calendar.current.startOfDay(for: entry.date)
+    return (entry.eventsByDay[start] ?? []).sorted { $0.startDate < $1.startDate }
+  }
+
+  var body: some View {
+    let maxEvents = family == .systemMedium ? 5 : 8
+    let events = Array(todayEvents.prefix(maxEvents))
+    let remaining = todayEvents.count - events.count
+    let day = Calendar.current.component(.day, from: entry.date)
+
+    HStack(spacing: 0) {
+      // Left: date
+      VStack(alignment: .leading, spacing: 1) {
+        Text(frenchMonthName(entry.date))
+          .font(.system(size: 8, weight: .semibold))
+          .foregroundColor(textSecondaryAdaptive)
+        Text(frenchWeekdayName(entry.date))
+          .font(.system(size: 11, weight: .semibold))
+          .foregroundColor(q2Color)
+        Text("\(day)")
+          .font(.system(size: 34, weight: .bold))
+          .foregroundColor(textPrimaryAdaptive)
+          .minimumScaleFactor(0.6)
+          .lineLimit(1)
+        Spacer(minLength: 0)
+      }
+      .padding(10)
+      .frame(width: 84)
+
+      Rectangle().fill(dividerAdaptive).frame(width: 1)
+
+      // Right: events
+      VStack(alignment: .leading, spacing: 5) {
+        Text("Aujourd'hui")
+          .font(.system(size: 10, weight: .bold))
+          .foregroundColor(textSecondaryAdaptive)
+
+        if events.isEmpty {
+          Text(calendarAuthorized() ? "Aucun événement" : "⚠ Accès calendrier requis")
+            .font(.system(size: 11))
+            .foregroundColor(textSecondaryAdaptive)
+        } else {
+          ForEach(Array(events.enumerated()), id: \.offset) { _, ev in
+            HStack(spacing: 6) {
+              Rectangle()
+                .fill(ev.color)
+                .frame(width: 3)
+                .cornerRadius(1.5)
+              VStack(alignment: .leading, spacing: 1) {
+                if !ev.allDay {
+                  Text(timeFormatter.string(from: ev.startDate))
+                    .font(.system(size: 9))
+                    .foregroundColor(textSecondaryAdaptive)
+                }
+                Text(ev.title)
+                  .font(.system(size: 11, weight: .medium))
+                  .foregroundColor(textPrimaryAdaptive)
+                  .lineLimit(1)
+              }
+            }
+          }
+          if remaining > 0 {
+            Text("+\(remaining) de plus")
+              .font(.system(size: 9))
+              .foregroundColor(textSecondaryAdaptive)
+          }
+        }
+        Spacer(minLength: 0)
+      }
+      .padding(10)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+}
+
+struct ScheduleWidget: Widget {
+  let kind = "EisenhowerSchedule"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: CalendarProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        ScheduleEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        ScheduleEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Emploi du temps")
+    .description("Vos événements du jour.")
+    .supportedFamilies([.systemMedium, .systemLarge])
+  }
+}
+
+// MARK: - Full Calendar Widget (Large, with event labels)
+
+struct FullCalEntryView: View {
+  let entry: CalendarEntry
+
+  private let cal = Calendar.current
+  private let letters = ["D", "L", "M", "M", "J", "V", "S"]
+
+  private var today: Int { cal.component(.day, from: entry.date) }
+
+  private var days: [Int?] {
+    var comps = cal.dateComponents([.year, .month], from: entry.date)
+    comps.day = 1
+    guard let first = cal.date(from: comps) else { return [] }
+    let weekday = cal.component(.weekday, from: first) - 1
+    let range = cal.range(of: .day, in: .month, for: entry.date)!
+    var result: [Int?] = Array(repeating: nil, count: weekday)
+    result += (1...range.count).map { Optional($0) }
+    return result
+  }
+
+  private func events(for day: Int) -> [CalEvent] {
+    var comps = cal.dateComponents([.year, .month], from: entry.date)
+    comps.day = day
+    guard let d = cal.date(from: comps) else { return [] }
+    return entry.eventsByDay[cal.startOfDay(for: d)] ?? []
+  }
+
+  var body: some View {
+    let rows = days.chunks(of: 7)
+    VStack(alignment: .leading, spacing: 2) {
+      Text(monthYearFormatter.string(from: entry.date).capitalized)
+        .font(.system(size: 13, weight: .bold))
+        .foregroundColor(textPrimaryAdaptive)
+        .padding(.bottom, 2)
+
+      // Day-of-week header
+      HStack(spacing: 0) {
+        ForEach(letters, id: \.self) { l in
+          Text(l)
+            .font(.system(size: 10, weight: .medium))
+            .foregroundColor(textSecondaryAdaptive)
+            .frame(maxWidth: .infinity)
+        }
+      }
+
+      // Day rows with event labels
+      ForEach(0..<rows.count, id: \.self) { r in
+        HStack(alignment: .top, spacing: 2) {
+          ForEach(0..<7, id: \.self) { c in
+            let idx = r * 7 + c
+            let day = idx < days.count ? days[idx] : nil
+            let evs = day.map { events(for: $0) } ?? []
+            let isToday = day.map { $0 == today } ?? false
+
+            VStack(alignment: .leading, spacing: 1) {
+              // Day number
+              ZStack {
+                if isToday {
+                  Circle().fill(q2Color).frame(width: 20, height: 20)
+                }
+                Text(day.map { "\($0)" } ?? "")
+                  .font(.system(size: 11, weight: isToday ? .bold : .regular))
+                  .foregroundColor(isToday ? .white : textPrimaryAdaptive)
+              }
+              .frame(maxWidth: .infinity)
+
+              // Event pills (up to 2)
+              ForEach(Array(evs.prefix(2).enumerated()), id: \.offset) { _, ev in
+                Text(ev.allDay ? ev.title : "\(timeFormatter.string(from: ev.startDate)) \(ev.title)")
+                  .font(.system(size: 7, weight: .medium))
+                  .foregroundColor(.white)
+                  .lineLimit(1)
+                  .padding(.horizontal, 2)
+                  .padding(.vertical, 1)
+                  .background(ev.color)
+                  .cornerRadius(2)
+              }
+              if evs.count > 2 {
+                Text("+\(evs.count - 2)")
+                  .font(.system(size: 7))
+                  .foregroundColor(textSecondaryAdaptive)
+              }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+          }
+        }
+        .frame(maxHeight: .infinity)
+      }
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+  }
+}
+
+struct FullCalWidget: Widget {
+  let kind = "EisenhowerFullCal"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: CalendarProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        FullCalEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        FullCalEntryView(entry: entry).background(bgAdaptive)
+      }
+    }
+    .configurationDisplayName("Calendrier complet")
+    .description("Vue complète du mois avec vos événements.")
     .supportedFamilies([.systemLarge])
   }
 }

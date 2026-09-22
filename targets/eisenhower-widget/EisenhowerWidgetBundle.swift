@@ -16,5 +16,10 @@ struct EisenhowerWidgetBundle: WidgetBundle {
     TodayWidget()
     UpcomingTasksWidget()
     BoardWidget()
+    MonthCalDefaultWidget()
+    MonthCalBlocWidget()
+    MonthCalClassiqueWidget()
+    ScheduleWidget()
+    FullCalWidget()
   }
 }

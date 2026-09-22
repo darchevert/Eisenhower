@@ -1,7 +1,7 @@
 {
   "type": "widget",
   "deploymentTarget": "16.0",
-  "frameworks": ["WidgetKit", "SwiftUI"],
+  "frameworks": ["WidgetKit", "SwiftUI", "EventKit"],
   "entitlements": {
     "com.apple.security.application-groups": ["group.com.darchevert.eisenhower"]
   }
