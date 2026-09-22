@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Switch,
   Alert,
   Platform,
+  Clipboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme/Theme';
 import { usePremium } from '@/hooks/usePremium';
 import { PurchaseService } from '@/services/purchaseService';
+import { UserIdService } from '@/services/userIdService';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTaskStore } from '@/store/taskStore';
 import { NotificationService } from '@/services/notificationService';
@@ -37,6 +39,13 @@ export function SettingsScreen() {
   const { isPremium } = usePremium();
   const versionTapCount = useRef(0);
   const versionTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [userId, setUserId] = useState<string | null>(UserIdService.getCached());
+
+  useEffect(() => {
+    if (!userId) {
+      UserIdService.get().then(setUserId);
+    }
+  }, []);
 
   function handleVersionTap() {
     versionTapCount.current += 1;
@@ -413,12 +422,34 @@ export function SettingsScreen() {
             <Text style={[styles.rowLabel, { color: colors.text }]} maxFontSizeMultiplier={1.2}>{t('settings.version')}</Text>
             <Text style={[styles.rowValue, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.2}>1.0.0</Text>
           </TouchableOpacity>
-          <View style={[styles.row, { borderBottomWidth: 0 }]}>
+          <View style={[styles.row, { borderBottomColor: colors.borderLight }]}>
             <Text style={[styles.rowLabel, { color: colors.text }]} maxFontSizeMultiplier={1.2}>{t('settings.status')}</Text>
             <Text style={[styles.rowValue, { color: isPremium ? '#34C759' : colors.textSecondary }]} maxFontSizeMultiplier={1.2}>
               {isPremium ? t('settings.statusPremium') : t('settings.statusFree')}
             </Text>
           </View>
+          {userId && (
+            <TouchableOpacity
+              style={[styles.row, { borderBottomWidth: 0 }]}
+              onPress={() => {
+                Clipboard.setString(userId);
+                Haptics.selectionAsync();
+                Alert.alert('Copié', 'ID copié dans le presse-papiers.');
+              }}
+              activeOpacity={0.6}
+            >
+              <Text style={[styles.rowLabel, { color: colors.textTertiary, fontSize: 11 }]} maxFontSizeMultiplier={1.1}>
+                ID
+              </Text>
+              <Text
+                style={[styles.rowValue, { color: colors.textTertiary, fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]}
+                maxFontSizeMultiplier={1.1}
+                numberOfLines={1}
+              >
+                {userId.slice(0, 8)}…
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

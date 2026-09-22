@@ -6,6 +6,7 @@ import Purchases, {
 } from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { useSettingsStore } from '@/store/settingsStore';
+import { UserIdService } from './userIdService';
 
 const ENTITLEMENT_ID = 'premium';
 
@@ -92,9 +93,17 @@ export const PurchaseService = {
     }
   },
 
-  async checkStatus(): Promise<void> {
-    if (__DEV__) return;
+  async initUser(): Promise<void> {
     try {
+      const userId = await UserIdService.get();
+      await Purchases.logIn(userId);
+    } catch {}
+  },
+
+  async checkStatus(): Promise<void> {
+    try {
+      await PurchaseService.initUser();
+      if (__DEV__) return;
       const customerInfo = await Purchases.getCustomerInfo();
       const active = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
       useSettingsStore.getState().setPremium(active);
