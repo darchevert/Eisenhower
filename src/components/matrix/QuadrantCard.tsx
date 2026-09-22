@@ -1,5 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withSequence,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme/Theme';
@@ -22,6 +28,17 @@ export function QuadrantCard({ quadrantId, onAddTask, onEditTask }: QuadrantCard
   const { colors, mode, getQuadrantStyle } = useTheme();
   const [expanded, setExpanded] = useState(false);
   const meta = QUADRANT_META[quadrantId];
+
+  const addBtnScale = useSharedValue(1);
+  const badgeScale = useSharedValue(1);
+  const prevCount = useRef(0);
+
+  const addBtnAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: addBtnScale.value }],
+  }));
+  const badgeAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: badgeScale.value }],
+  }));
   const style = getQuadrantStyle(quadrantId);
   const allTasks = useTaskStore((s) => s.tasks);
   const currentMatrixId = useTaskStore((s) => s.currentMatrixId);
@@ -41,6 +58,16 @@ export function QuadrantCard({ quadrantId, onAddTask, onEditTask }: QuadrantCard
   const displayTasks = expanded ? visibleTasks : visibleTasks.slice(0, 3);
   const hasMore = visibleTasks.length > 3 && !expanded;
   const activeTasks = tasks.filter((tk) => !tk.completed);
+
+  useEffect(() => {
+    if (activeTasks.length !== prevCount.current && prevCount.current !== 0) {
+      badgeScale.value = withSequence(
+        withSpring(1.5, { damping: 5, stiffness: 400 }),
+        withSpring(1, { damping: 12, stiffness: 300 })
+      );
+    }
+    prevCount.current = activeTasks.length;
+  }, [activeTasks.length]);
 
   const label = t(`quadrants.${quadrantId}.label`);
 
@@ -91,11 +118,13 @@ export function QuadrantCard({ quadrantId, onAddTask, onEditTask }: QuadrantCard
 
         <View style={styles.headerRight}>
           {activeTasks.length > 0 && (
-            <View style={[styles.badge, { backgroundColor: style.accent }]}>
+            <Animated.View style={[styles.badge, { backgroundColor: style.accent }, badgeAnimStyle]}>
               <Text style={styles.badgeText}>{activeTasks.length}</Text>
-            </View>
+            </Animated.View>
           )}
           <TouchableOpacity
+            onPressIn={() => { addBtnScale.value = withSpring(0.82, { damping: 8, stiffness: 400 }); }}
+            onPressOut={() => { addBtnScale.value = withSpring(1, { damping: 12, stiffness: 300 }); }}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onAddTask(quadrantId);
@@ -103,7 +132,9 @@ export function QuadrantCard({ quadrantId, onAddTask, onEditTask }: QuadrantCard
             style={[styles.addBtn, { backgroundColor: addBtnBg }]}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="add" size={16} color={colors.textSecondary} />
+            <Animated.View style={addBtnAnimStyle}>
+              <Ionicons name="add" size={16} color={colors.textSecondary} />
+            </Animated.View>
           </TouchableOpacity>
         </View>
       </View>

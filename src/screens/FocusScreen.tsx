@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -43,7 +43,12 @@ const PRESETS = [
 
 export function FocusScreen() {
   const { colors, mode } = useTheme();
-  const activeTasks = useTaskStore((s) => s.getActiveTasks());
+  const allTasks = useTaskStore((s) => s.tasks);
+  const currentMatrixId = useTaskStore((s) => s.currentMatrixId);
+  const activeTasks = useMemo(
+    () => allTasks.filter((tk) => tk.matrixId === currentMatrixId && !tk.completed),
+    [allTasks, currentMatrixId]
+  );
   const isPremium = useSettingsStore((s) => s.isPremium);
   const sessionCompletedCount = useSettingsStore((s) => s.sessionCompletedCount);
   const incrementCompleted = useSettingsStore((s) => s.incrementSessionCompleted);

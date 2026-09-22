@@ -7,6 +7,11 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -25,6 +30,11 @@ import type { QuadrantId, Task } from '@/types';
 
 export function MatrixScreen() {
   const { colors } = useTheme();
+  const fabScale = useSharedValue(1);
+  const fabAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: fabScale.value }],
+  }));
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantId>('q1');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -160,11 +170,14 @@ export function MatrixScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.addFab, { backgroundColor: colors.primary }]}
+            onPressIn={() => { fabScale.value = withSpring(0.88, { damping: 8, stiffness: 400 }); }}
+            onPressOut={() => { fabScale.value = withSpring(1, { damping: 12, stiffness: 300 }); }}
             onPress={() => handleAddTask('q1')}
-            activeOpacity={0.85}
+            activeOpacity={1}
           >
-            <Ionicons name="add" size={22} color="#FFFFFF" />
+            <Animated.View style={[styles.addFab, { backgroundColor: colors.primary }, fabAnimStyle]}>
+              <Ionicons name="add" size={22} color="#FFFFFF" />
+            </Animated.View>
           </TouchableOpacity>
         </View>
       </View>

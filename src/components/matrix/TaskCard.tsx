@@ -4,9 +4,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Animated,
   Alert,
 } from 'react-native';
+import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -63,29 +63,27 @@ export function TaskCard({ task, accentColor, onPress }: TaskCardProps) {
     );
   }
 
-  const renderLeftActions = (progress: Animated.AnimatedInterpolation<number>) => {
-    const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] });
-    return (
-      <Animated.View style={[styles.swipeAction, styles.completeAction, { transform: [{ scale }] }]}>
-        <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
-        <Text style={styles.swipeText}>{t('tasks.done')}</Text>
-      </Animated.View>
-    );
-  };
+  const renderLeftActions = () => (
+    <View style={[styles.swipeAction, styles.completeAction]}>
+      <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+      <Text style={styles.swipeText}>{t('tasks.done')}</Text>
+    </View>
+  );
 
-  const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => {
-    const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] });
-    return (
-      <Animated.View style={[styles.swipeAction, styles.deleteAction, { transform: [{ scale }] }]}>
-        <Ionicons name="trash" size={20} color="#FFFFFF" />
-        <Text style={styles.swipeText}>{t('tasks.delete')}</Text>
-      </Animated.View>
-    );
-  };
+  const renderRightActions = () => (
+    <View style={[styles.swipeAction, styles.deleteAction]}>
+      <Ionicons name="trash" size={20} color="#FFFFFF" />
+      <Text style={styles.swipeText}>{t('tasks.delete')}</Text>
+    </View>
+  );
 
   const overdue = task.dueDate ? isOverdue(task.dueDate) : false;
 
   return (
+    <Animated.View
+      entering={FadeInDown.duration(280).springify().damping(18)}
+      exiting={FadeOutLeft.duration(220)}
+    >
     <Swipeable
       ref={swipeRef}
       renderLeftActions={renderLeftActions}
@@ -152,6 +150,7 @@ export function TaskCard({ task, accentColor, onPress }: TaskCardProps) {
         )}
       </TouchableOpacity>
     </Swipeable>
+    </Animated.View>
   );
 }
 

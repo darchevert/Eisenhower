@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -74,12 +75,19 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             activeOpacity={0.7}
           >
             {isFocused ? (
-              <View style={[tabStyles.pill, { backgroundColor: colors.primary }]}>
-                <Ionicons name={cfg.iconActive as any} size={16} color="#FFFFFF" />
-                <Text style={tabStyles.pillLabel} numberOfLines={1}>{label}</Text>
-              </View>
+              <Animated.View
+                entering={ZoomIn.springify().damping(14).stiffness(180)}
+                exiting={FadeOut.duration(80)}
+              >
+                <View style={[tabStyles.pill, { backgroundColor: colors.primary }]}>
+                  <Ionicons name={cfg.iconActive as any} size={16} color="#FFFFFF" />
+                  <Text style={tabStyles.pillLabel} numberOfLines={1}>{label}</Text>
+                </View>
+              </Animated.View>
             ) : (
-              <Ionicons name={cfg.icon as any} size={22} color={colors.textTertiary} />
+              <Animated.View entering={FadeIn.duration(160)}>
+                <Ionicons name={cfg.icon as any} size={22} color={colors.textTertiary} />
+              </Animated.View>
             )}
           </TouchableOpacity>
         );
