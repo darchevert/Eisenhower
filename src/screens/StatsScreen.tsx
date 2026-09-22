@@ -1,5 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  Easing,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -13,6 +20,42 @@ import { Spacing, Radius, Shadow, Typography, MIN_TOUCH_TARGET } from '@/theme/s
 import { QUADRANT_IDS } from '@/utils/quadrants';
 import { t } from '@/i18n';
 import { BannerAd } from '@/ads/BannerAd';
+
+const TRACK_HEIGHT = 60;
+
+function AnimatedBar({
+  count,
+  maxCount,
+  color,
+  delay,
+}: {
+  count: number;
+  maxCount: number;
+  color: string;
+  delay: number;
+}) {
+  const targetH = count > 0 ? Math.max(4, Math.round((count / maxCount) * TRACK_HEIGHT)) : 0;
+  const heightAnim = useSharedValue(0);
+
+  useEffect(() => {
+    heightAnim.value = withDelay(
+      delay,
+      withTiming(targetH, { duration: 550, easing: Easing.out(Easing.cubic) })
+    );
+  }, [targetH]);
+
+  const animStyle = useAnimatedStyle(() => ({ height: heightAnim.value }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.bar,
+        { backgroundColor: color, opacity: count > 0 ? 1 : 0.15 },
+        animStyle,
+      ]}
+    />
+  );
+}
 
 export function StatsScreen() {
   const { colors, mode, getQuadrantStyle } = useTheme();
@@ -152,11 +195,11 @@ export function StatsScreen() {
             {stats.dailyCompletions.map((day, i) => (
               <View key={i} style={styles.barColumn}>
                 <View style={styles.barTrack}>
-                  <View
-                    style={[
-                      styles.bar,
-                      { height: `${(day.count / maxDay) * 100}%`, backgroundColor: '#007AFF', opacity: day.count > 0 ? 1 : 0.15 },
-                    ]}
+                  <AnimatedBar
+                    count={day.count}
+                    maxCount={maxDay}
+                    color={colors.primary}
+                    delay={i * 55}
                   />
                 </View>
                 <Text style={[styles.barLabel, { color: colors.textTertiary }]} maxFontSizeMultiplier={1.0}>{day.date}</Text>
@@ -274,10 +317,10 @@ const styles = StyleSheet.create({
   quadrantBarContainer: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   quadrantBar: { height: '100%', borderRadius: 4 },
   quadrantCount: { width: 24, ...Typography.footnote, textAlign: 'right' },
-  barChart: { flexDirection: 'row', height: 80, gap: Spacing.xs, alignItems: 'flex-end', marginTop: Spacing.sm },
+  barChart: { flexDirection: 'row', gap: Spacing.xs, marginTop: Spacing.sm },
   barColumn: { flex: 1, alignItems: 'center', gap: 4 },
-  barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end' },
-  bar: { width: '100%', borderRadius: 3, minHeight: 4 },
+  barTrack: { height: TRACK_HEIGHT, width: '100%', justifyContent: 'flex-end' },
+  bar: { width: '100%', borderRadius: 3 },
   barLabel: { ...Typography.caption2 },
   barValue: { ...Typography.caption2, fontWeight: '600' },
   // History

@@ -119,6 +119,10 @@ const ja: Translations = {
       noAdsDesc: '完全に集中できる環境',
     },
   },
+  notifications: {
+    overdueTitle: '期限切れのタスク',
+    overdueBody: 'マトリックスに{{count}}件の期限切れタスクがあります',
+  },
   matrices: {
     title: 'マイマトリックス',
     newMatrix: '新しいマトリックス',

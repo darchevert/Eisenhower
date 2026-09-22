@@ -119,6 +119,10 @@ const es: Translations = {
       noAdsDesc: 'Sin distracciones',
     },
   },
+  notifications: {
+    overdueTitle: 'Tareas vencidas',
+    overdueBody: '{{count}} tarea(s) vencida(s) en tu matriz',
+  },
   matrices: {
     title: 'Mis Matrices',
     newMatrix: 'Nueva Matriz',

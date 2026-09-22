@@ -119,6 +119,10 @@ const ru: Translations = {
       noAdsDesc: 'Полная концентрация',
     },
   },
+  notifications: {
+    overdueTitle: 'Просроченные задачи',
+    overdueBody: '{{count}} просроченная(-ых) задача(-и) в вашей матрице',
+  },
   matrices: {
     title: 'Мои Матрицы',
     newMatrix: 'Новая Матрица',

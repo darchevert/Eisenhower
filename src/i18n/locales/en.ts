@@ -124,6 +124,10 @@ const en = {
       noAdsDesc: 'Completely distraction-free',
     },
   },
+  notifications: {
+    overdueTitle: 'Overdue Tasks',
+    overdueBody: '{{count}} task(s) overdue in your matrix',
+  },
   matrices: {
     title: 'My Matrices',
     newMatrix: 'New Matrix',

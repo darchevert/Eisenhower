@@ -119,6 +119,10 @@ const zh: Translations = {
       noAdsDesc: '完全无干扰',
     },
   },
+  notifications: {
+    overdueTitle: '逾期任务',
+    overdueBody: '您的矩阵中有{{count}}个任务已逾期',
+  },
   matrices: {
     title: '我的矩阵',
     newMatrix: '新建矩阵',

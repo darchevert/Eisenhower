@@ -119,6 +119,10 @@ const it: Translations = {
       noAdsDesc: 'Zero distrazioni',
     },
   },
+  notifications: {
+    overdueTitle: 'Attività scadute',
+    overdueBody: '{{count}} attività scaduta/e nella tua matrice',
+  },
   matrices: {
     title: 'Le mie Matrici',
     newMatrix: 'Nuova Matrice',

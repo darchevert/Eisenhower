@@ -119,6 +119,10 @@ const de: Translations = {
       noAdsDesc: 'Völlig ablenkungsfrei',
     },
   },
+  notifications: {
+    overdueTitle: 'Überfällige Aufgaben',
+    overdueBody: '{{count}} überfällige Aufgabe(n) in deiner Matrix',
+  },
   matrices: {
     title: 'Meine Matrizen',
     newMatrix: 'Neue Matrix',

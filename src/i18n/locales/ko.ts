@@ -119,6 +119,10 @@ const ko: Translations = {
       noAdsDesc: '완전히 집중할 수 있는 환경',
     },
   },
+  notifications: {
+    overdueTitle: '기한 초과 작업',
+    overdueBody: '매트릭스에 {{count}}개의 기한 초과 작업이 있습니다',
+  },
   matrices: {
     title: '내 매트릭스',
     newMatrix: '새 매트릭스',

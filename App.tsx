@@ -10,6 +10,7 @@ import { useBadge } from '@/hooks/useBadge';
 import { useAppOpen } from '@/ads/useAppOpen';
 import AppNavigator from '@/navigation/AppNavigator';
 import { PurchaseService } from '@/services/purchaseService';
+import { NotificationService } from '@/services/notificationService';
 
 // Configure RevenueCat once at module load (before any component mounts)
 PurchaseService.configure();
@@ -24,10 +25,19 @@ function ThemedApp() {
 
   useEffect(() => {
     if (settingsHydrated) {
-      // Sync premium status from RevenueCat on every app open
       PurchaseService.checkStatus();
     }
   }, [settingsHydrated]);
+
+  useEffect(() => {
+    if (!tasksHydrated) return;
+    const { tasks } = useTaskStore.getState();
+    const now = Date.now();
+    const overdueCount = tasks.filter(
+      (tk) => !tk.completed && tk.dueDate && tk.dueDate < now
+    ).length;
+    NotificationService.scheduleOverdueDigest(overdueCount);
+  }, [tasksHydrated]);
 
   if (!settingsHydrated || !tasksHydrated) {
     return null;

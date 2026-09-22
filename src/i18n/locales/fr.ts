@@ -126,6 +126,10 @@ const fr: Translations = {
       noAdsDesc: 'Zéro distraction',
     },
   },
+  notifications: {
+    overdueTitle: 'Tâches en retard',
+    overdueBody: '{{count}} tâche(s) en retard dans votre matrice',
+  },
   matrices: {
     title: 'Mes Matrices',
     newMatrix: 'Nouvelle Matrice',

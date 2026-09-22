@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { t } from '@/i18n';
 import type { Task } from '@/types';
 
 Notifications.setNotificationHandler({
@@ -77,5 +78,35 @@ export const NotificationService = {
     await Notifications.cancelScheduledNotificationAsync(
       `${TASK_ID_PREFIX}${taskId}`
     ).catch(() => {});
+  },
+
+  async scheduleOverdueDigest(overdueCount: number): Promise<void> {
+    if (Platform.OS === 'web') return;
+
+    await Notifications.cancelScheduledNotificationAsync('overdue-digest').catch(() => {});
+
+    if (overdueCount === 0) return;
+
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') return;
+
+    // Fire tomorrow at 9am (or today at 9am if not yet passed)
+    const next9am = new Date();
+    next9am.setHours(9, 0, 0, 0);
+    if (next9am <= new Date()) {
+      next9am.setDate(next9am.getDate() + 1);
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      identifier: 'overdue-digest',
+      content: {
+        title: t('notifications.overdueTitle'),
+        body: t('notifications.overdueBody').replace('{{count}}', String(overdueCount)),
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: next9am,
+      },
+    }).catch(() => {});
   },
 };

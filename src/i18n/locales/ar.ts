@@ -119,6 +119,10 @@ const ar: Translations = {
       noAdsDesc: 'بيئة خالية من الإلهاء',
     },
   },
+  notifications: {
+    overdueTitle: 'مهام متأخرة',
+    overdueBody: '{{count}} مهمة/مهام متأخرة في مصفوفتك',
+  },
   matrices: {
     title: 'مصفوفاتي',
     newMatrix: 'مصفوفة جديدة',

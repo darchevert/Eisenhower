@@ -119,6 +119,10 @@ const nl: Translations = {
       noAdsDesc: 'Volledig afleidingsvrij',
     },
   },
+  notifications: {
+    overdueTitle: 'Achterstallige taken',
+    overdueBody: '{{count}} achterstallige taak/taken in je matrix',
+  },
   matrices: {
     title: 'Mijn Matrices',
     newMatrix: 'Nieuwe Matrix',
