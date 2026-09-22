@@ -15,12 +15,13 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: "com.darchevert.eisenhower",
-      entitlements: {
-        "com.apple.security.application-groups": ["group.com.darchevert.eisenhower"],
-      },
       infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
         NSCalendarsUsageDescription: "L'app accède à votre calendrier pour afficher vos événements dans les widgets.",
         NSCalendarsFullAccessUsageDescription: "L'app accède à votre calendrier pour afficher vos événements dans les widgets.",
+      },
+      entitlements: {
+        "com.apple.security.application-groups": ["group.com.darchevert.eisenhower"],
       },
     },
     android: {
@@ -44,6 +45,7 @@ module.exports = {
     },
     owner: "darchevert",
     plugins: [
+      "./plugins/withFmtFix",
       ["@bacons/apple-targets"],
       [
         "react-native-android-widget",

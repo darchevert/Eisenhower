@@ -2,6 +2,15 @@
   "cli": {
     "appVersionSource": "remote"
   },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "cedric.suslec@gmail.com",
+        "ascAppId": "6775933654",
+        "appleTeamId": "LMUQKBGLGU"
+      }
+    }
+  },
   "build": {
     "preview": {
       "android": {
@@ -24,7 +33,9 @@
       "android": {
         "buildType": "app-bundle"
       },
-      "ios": {},
+      "ios": {
+        "image": "latest"
+      },
       "env": {
         "ADMOB_APP_ID_ANDROID": "ca-app-pub-5218071664586608~1977894281",
         "ADMOB_APP_ID_IOS": "ca-app-pub-5218071664586608~3071484102",
@@ -33,7 +44,8 @@
         "EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_ANDROID": "ca-app-pub-5218071664586608/5679289970",
         "EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID_IOS": "ca-app-pub-5218071664586608/5506075757",
         "EXPO_PUBLIC_ADMOB_APP_OPEN_ID_ANDROID": "ca-app-pub-5218071664586608/8145946223",
-        "EXPO_PUBLIC_ADMOB_APP_OPEN_ID_IOS": "ca-app-pub-5218071664586608/1495023371"
+        "EXPO_PUBLIC_ADMOB_APP_OPEN_ID_IOS": "ca-app-pub-5218071664586608/1495023371",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_zOvdXDrviISKRGGTHLpGrnzwaTM"
       }
     }
   }

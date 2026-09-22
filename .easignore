@@ -1,0 +1,7 @@
+# Screenshots et références design
+Taska Ref/
+
+# Fichiers inutiles pour le build
+*.png.map
+.DS_Store
+**/.DS_Store
