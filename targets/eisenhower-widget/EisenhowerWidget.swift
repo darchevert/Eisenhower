@@ -20,7 +20,7 @@ struct EisenhowerEntry: TimelineEntry {
   let data: WidgetData
 }
 
-// MARK: - Shared loading
+// MARK: - Data loading
 
 private let APP_GROUP = "group.com.darchevert.eisenhower"
 
@@ -31,7 +31,6 @@ private func loadWidgetData() -> WidgetData {
      let parsed = try? JSONDecoder().decode(WidgetData.self, from: raw) {
     return parsed
   }
-  // Legacy fallback: read Q1-only key
   if let defaults = UserDefaults(suiteName: APP_GROUP),
      let json = defaults.string(forKey: "widget_tasks"),
      let raw = json.data(using: .utf8),
@@ -44,28 +43,25 @@ private func loadWidgetData() -> WidgetData {
 private func placeholderData() -> WidgetData {
   WidgetData(
     q1: [WidgetTask(id: "1", title: "Prepare quarterly report"),
-         WidgetTask(id: "2", title: "Team standup"),
-         WidgetTask(id: "3", title: "Fix critical bug")],
-    q2: [WidgetTask(id: "4", title: "Learn SwiftUI"),
-         WidgetTask(id: "5", title: "Exercise plan")],
-    q3: [WidgetTask(id: "6", title: "Reply to emails"),
-         WidgetTask(id: "7", title: "Book meeting room")],
-    q4: [WidgetTask(id: "8", title: "Old newsletter"),
-         WidgetTask(id: "9", title: "Junk folder")]
+         WidgetTask(id: "2", title: "Fix critical bug")],
+    q2: [WidgetTask(id: "3", title: "Learn SwiftUI"),
+         WidgetTask(id: "4", title: "Exercise plan")],
+    q3: [WidgetTask(id: "5", title: "Reply to emails"),
+         WidgetTask(id: "6", title: "Book meeting room")],
+    q4: [WidgetTask(id: "7", title: "Old newsletter"),
+         WidgetTask(id: "8", title: "Junk folder")]
   )
 }
 
-// MARK: - Shared provider
+// MARK: - Provider
 
 struct EisenhowerProvider: TimelineProvider {
   func placeholder(in context: Context) -> EisenhowerEntry {
     EisenhowerEntry(date: Date(), data: placeholderData())
   }
-
   func getSnapshot(in context: Context, completion: @escaping (EisenhowerEntry) -> Void) {
     completion(EisenhowerEntry(date: Date(), data: loadWidgetData()))
   }
-
   func getTimeline(in context: Context, completion: @escaping (Timeline<EisenhowerEntry>) -> Void) {
     let entry = EisenhowerEntry(date: Date(), data: loadWidgetData())
     let next = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
@@ -73,17 +69,37 @@ struct EisenhowerProvider: TimelineProvider {
   }
 }
 
-// MARK: - Colors
+// MARK: - Adaptive colors (auto dark/light)
 
-private let bgColor        = Color(red: 0.059, green: 0.090, blue: 0.165)
-private let textPrimary    = Color(red: 0.886, green: 0.914, blue: 0.941)
-private let textSecondary  = Color(red: 0.392, green: 0.455, blue: 0.533)
-private let q1Color        = Color(red: 0.937, green: 0.267, blue: 0.267) // #EF4444
-private let q2Color        = Color(red: 0.133, green: 0.773, blue: 0.369) // #22C55E
-private let q3Color        = Color(red: 0.961, green: 0.620, blue: 0.043) // #F59E0B
-private let q4Color        = Color(red: 0.392, green: 0.455, blue: 0.533) // #64748B
+private let bgAdaptive = Color(UIColor { t in
+  t.userInterfaceStyle == .dark
+    ? UIColor(red: 0.059, green: 0.090, blue: 0.165, alpha: 1)
+    : UIColor(red: 0.965, green: 0.969, blue: 0.980, alpha: 1)
+})
+private let textPrimaryAdaptive = Color(UIColor { t in
+  t.userInterfaceStyle == .dark
+    ? UIColor(red: 0.886, green: 0.914, blue: 0.941, alpha: 1)
+    : UIColor(red: 0.102, green: 0.137, blue: 0.216, alpha: 1)
+})
+private let textSecondaryAdaptive = Color(UIColor { t in
+  t.userInterfaceStyle == .dark
+    ? UIColor(red: 0.392, green: 0.455, blue: 0.533, alpha: 1)
+    : UIColor(red: 0.431, green: 0.490, blue: 0.573, alpha: 1)
+})
+private let dividerAdaptive = Color(UIColor { t in
+  t.userInterfaceStyle == .dark
+    ? UIColor(red: 0.118, green: 0.161, blue: 0.235, alpha: 1)
+    : UIColor(red: 0.839, green: 0.859, blue: 0.898, alpha: 1)
+})
 
-// MARK: - Shared quadrant task list view
+// MARK: - Quadrant accent colors
+
+private let q1Color = Color(red: 0.937, green: 0.267, blue: 0.267)
+private let q2Color = Color(red: 0.133, green: 0.773, blue: 0.369)
+private let q3Color = Color(red: 0.961, green: 0.620, blue: 0.043)
+private let q4Color = Color(red: 0.392, green: 0.455, blue: 0.533)
+
+// MARK: - QuadrantListView (per-quadrant widgets Q1–Q4)
 
 struct QuadrantListView: View {
   let tasks: [WidgetTask]
@@ -92,51 +108,26 @@ struct QuadrantListView: View {
   let iconName: String
   @Environment(\.widgetFamily) var family
 
-  private var maxTasks: Int {
-    switch family {
-    case .systemSmall: return 2
-    default: return 5
-    }
-  }
+  private var maxTasks: Int { family == .systemSmall ? 2 : 5 }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
       HStack(spacing: 5) {
-        Circle()
-          .fill(accentColor)
-          .frame(width: 7, height: 7)
-        Text(label)
-          .font(.system(size: 12, weight: .bold))
-          .foregroundColor(accentColor)
+        Circle().fill(accentColor).frame(width: 7, height: 7)
+        Text(label).font(.system(size: 12, weight: .bold)).foregroundColor(accentColor)
         Spacer()
-        Image(systemName: iconName)
-          .font(.system(size: 11))
-          .foregroundColor(textSecondary)
+        Image(systemName: iconName).font(.system(size: 11)).foregroundColor(textSecondaryAdaptive)
       }
-
-      Rectangle()
-        .fill(accentColor.opacity(0.25))
-        .frame(height: 1)
-        .padding(.vertical, 1)
-
+      Rectangle().fill(accentColor.opacity(0.25)).frame(height: 1).padding(.vertical, 1)
       if tasks.isEmpty {
         Spacer()
-        Text("No tasks")
-          .font(.system(size: 12))
-          .foregroundColor(textSecondary)
-          .italic()
+        Text("No tasks").font(.system(size: 12)).foregroundColor(textSecondaryAdaptive).italic()
         Spacer()
       } else {
         ForEach(Array(tasks.prefix(maxTasks))) { task in
           HStack(alignment: .top, spacing: 5) {
-            Circle()
-              .fill(textSecondary.opacity(0.6))
-              .frame(width: 5, height: 5)
-              .padding(.top, 4)
-            Text(task.title)
-              .font(.system(size: 12))
-              .foregroundColor(textPrimary)
-              .lineLimit(1)
+            Circle().fill(textSecondaryAdaptive.opacity(0.5)).frame(width: 5, height: 5).padding(.top, 4)
+            Text(task.title).font(.system(size: 12)).foregroundColor(textPrimaryAdaptive).lineLimit(1)
           }
         }
         Spacer(minLength: 0)
@@ -144,32 +135,25 @@ struct QuadrantListView: View {
     }
     .padding(12)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    .background(bgColor)
+    .background(bgAdaptive)
   }
 }
 
-// MARK: - Q1 widget
+// MARK: - Q1
 
 struct Q1EntryView: View {
   var entry: EisenhowerEntry
   var body: some View {
-    QuadrantListView(
-      tasks: entry.data.q1,
-      accentColor: q1Color,
-      label: "Do First",
-      iconName: "exclamationmark.circle.fill"
-    )
+    QuadrantListView(tasks: entry.data.q1, accentColor: q1Color, label: "Do First", iconName: "exclamationmark.circle.fill")
   }
 }
 
 struct Q1Widget: Widget {
   let kind = "EisenhowerWidget"
-
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
       if #available(iOS 17.0, *) {
-        Q1EntryView(entry: entry)
-          .containerBackground(bgColor, for: .widget)
+        Q1EntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
       } else {
         Q1EntryView(entry: entry)
       }
@@ -180,28 +164,21 @@ struct Q1Widget: Widget {
   }
 }
 
-// MARK: - Q2 widget
+// MARK: - Q2
 
 struct Q2EntryView: View {
   var entry: EisenhowerEntry
   var body: some View {
-    QuadrantListView(
-      tasks: entry.data.q2,
-      accentColor: q2Color,
-      label: "Schedule",
-      iconName: "calendar"
-    )
+    QuadrantListView(tasks: entry.data.q2, accentColor: q2Color, label: "Schedule", iconName: "calendar")
   }
 }
 
 struct Q2Widget: Widget {
   let kind = "EisenhowerQ2"
-
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
       if #available(iOS 17.0, *) {
-        Q2EntryView(entry: entry)
-          .containerBackground(bgColor, for: .widget)
+        Q2EntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
       } else {
         Q2EntryView(entry: entry)
       }
@@ -212,28 +189,21 @@ struct Q2Widget: Widget {
   }
 }
 
-// MARK: - Q3 widget
+// MARK: - Q3
 
 struct Q3EntryView: View {
   var entry: EisenhowerEntry
   var body: some View {
-    QuadrantListView(
-      tasks: entry.data.q3,
-      accentColor: q3Color,
-      label: "Delegate",
-      iconName: "arrow.turn.up.right"
-    )
+    QuadrantListView(tasks: entry.data.q3, accentColor: q3Color, label: "Delegate", iconName: "arrow.turn.up.right")
   }
 }
 
 struct Q3Widget: Widget {
   let kind = "EisenhowerQ3"
-
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
       if #available(iOS 17.0, *) {
-        Q3EntryView(entry: entry)
-          .containerBackground(bgColor, for: .widget)
+        Q3EntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
       } else {
         Q3EntryView(entry: entry)
       }
@@ -244,28 +214,21 @@ struct Q3Widget: Widget {
   }
 }
 
-// MARK: - Q4 widget
+// MARK: - Q4
 
 struct Q4EntryView: View {
   var entry: EisenhowerEntry
   var body: some View {
-    QuadrantListView(
-      tasks: entry.data.q4,
-      accentColor: q4Color,
-      label: "Eliminate",
-      iconName: "trash"
-    )
+    QuadrantListView(tasks: entry.data.q4, accentColor: q4Color, label: "Eliminate", iconName: "trash")
   }
 }
 
 struct Q4Widget: Widget {
   let kind = "EisenhowerQ4"
-
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
       if #available(iOS 17.0, *) {
-        Q4EntryView(entry: entry)
-          .containerBackground(bgColor, for: .widget)
+        Q4EntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
       } else {
         Q4EntryView(entry: entry)
       }
@@ -276,7 +239,7 @@ struct Q4Widget: Widget {
   }
 }
 
-// MARK: - Matrix overview widget
+// MARK: - QuadrantCellView (Matrix 2x2 cell)
 
 struct QuadrantCellView: View {
   let tasks: [WidgetTask]
@@ -287,28 +250,15 @@ struct QuadrantCellView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 3) {
       HStack(spacing: 4) {
-        Circle()
-          .fill(color)
-          .frame(width: 5, height: 5)
-        Text(label)
-          .font(.system(size: 10, weight: .bold))
-          .foregroundColor(color)
-          .lineLimit(1)
+        Circle().fill(color).frame(width: 5, height: 5)
+        Text(label).font(.system(size: 10, weight: .bold)).foregroundColor(color).lineLimit(1)
       }
-      Rectangle()
-        .fill(color.opacity(0.2))
-        .frame(height: 1)
-        .padding(.bottom, 1)
+      Rectangle().fill(color.opacity(0.2)).frame(height: 1).padding(.bottom, 1)
       if tasks.isEmpty {
-        Text("—")
-          .font(.system(size: 10))
-          .foregroundColor(textSecondary)
+        Text("—").font(.system(size: 10)).foregroundColor(textSecondaryAdaptive)
       } else {
         ForEach(Array(tasks.prefix(maxTasks))) { task in
-          Text(task.title)
-            .font(.system(size: 10))
-            .foregroundColor(textPrimary)
-            .lineLimit(1)
+          Text(task.title).font(.system(size: 10)).foregroundColor(textPrimaryAdaptive).lineLimit(1)
         }
       }
       Spacer(minLength: 0)
@@ -318,48 +268,244 @@ struct QuadrantCellView: View {
   }
 }
 
+// MARK: - Matrix 2x2
+
 struct MatrixEntryView: View {
   var entry: EisenhowerEntry
   @Environment(\.widgetFamily) var family
 
-  private var maxPerQuadrant: Int {
-    family == .systemLarge ? 3 : 2
-  }
-
-  private let dividerColor = Color(red: 0.118, green: 0.161, blue: 0.235)
+  private var maxPerQuadrant: Int { family == .systemLarge ? 3 : 2 }
 
   var body: some View {
     VStack(spacing: 0) {
       HStack(spacing: 0) {
         QuadrantCellView(tasks: entry.data.q1, color: q1Color, label: "Do First",  maxTasks: maxPerQuadrant)
-        dividerColor.frame(width: 1)
+        dividerAdaptive.frame(width: 1)
         QuadrantCellView(tasks: entry.data.q2, color: q2Color, label: "Schedule",  maxTasks: maxPerQuadrant)
       }
-      dividerColor.frame(height: 1)
+      dividerAdaptive.frame(height: 1)
       HStack(spacing: 0) {
         QuadrantCellView(tasks: entry.data.q3, color: q3Color, label: "Delegate",  maxTasks: maxPerQuadrant)
-        dividerColor.frame(width: 1)
+        dividerAdaptive.frame(width: 1)
         QuadrantCellView(tasks: entry.data.q4, color: q4Color, label: "Eliminate", maxTasks: maxPerQuadrant)
       }
     }
-    .background(bgColor)
+    .background(bgAdaptive)
   }
 }
 
 struct MatrixWidget: Widget {
   let kind = "EisenhowerMatrix"
-
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
       if #available(iOS 17.0, *) {
-        MatrixEntryView(entry: entry)
-          .containerBackground(bgColor, for: .widget)
+        MatrixEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
       } else {
         MatrixEntryView(entry: entry)
       }
     }
     .configurationDisplayName("Eisenhower Matrix")
     .description("All four quadrants at a glance.")
+    .supportedFamilies([.systemMedium, .systemLarge])
+  }
+}
+
+// MARK: - CountDot helper
+
+private struct CountDot: View {
+  let color: Color
+  let count: Int
+  var body: some View {
+    HStack(spacing: 2) {
+      Circle().fill(color).frame(width: 5, height: 5)
+      Text("\(count)").font(.system(size: 9, weight: .semibold)).foregroundColor(color)
+    }
+  }
+}
+
+// MARK: - Task Dashboard (flat task list with quadrant count header)
+
+struct TaskDashboardEntryView: View {
+  var entry: EisenhowerEntry
+  @Environment(\.widgetFamily) var family
+
+  private struct TaskItem: Identifiable {
+    let id: String; let title: String; let color: Color
+  }
+  private var allTasks: [TaskItem] {
+    entry.data.q1.map { TaskItem(id: $0.id, title: $0.title, color: q1Color) } +
+    entry.data.q2.map { TaskItem(id: $0.id, title: $0.title, color: q2Color) } +
+    entry.data.q3.map { TaskItem(id: $0.id, title: $0.title, color: q3Color) } +
+    entry.data.q4.map { TaskItem(id: $0.id, title: $0.title, color: q4Color) }
+  }
+  private var maxVisible: Int { family == .systemSmall ? 3 : 6 }
+
+  var body: some View {
+    let all = allTasks
+    let visible = Array(all.prefix(maxVisible))
+    let overflow = all.count - visible.count
+
+    VStack(alignment: .leading, spacing: 4) {
+      HStack(spacing: 4) {
+        Text("À faire").font(.system(size: 12, weight: .bold)).foregroundColor(textPrimaryAdaptive)
+        Spacer()
+        CountDot(color: q1Color, count: entry.data.q1.count)
+        CountDot(color: q2Color, count: entry.data.q2.count)
+        CountDot(color: q3Color, count: entry.data.q3.count)
+        CountDot(color: q4Color, count: entry.data.q4.count)
+      }
+      Rectangle().fill(dividerAdaptive).frame(height: 1)
+      if all.isEmpty {
+        Spacer()
+        Text("No tasks").font(.system(size: 12)).foregroundColor(textSecondaryAdaptive).italic()
+        Spacer()
+      } else {
+        ForEach(visible) { item in
+          HStack(alignment: .top, spacing: 6) {
+            Circle().fill(item.color).frame(width: 6, height: 6).padding(.top, 3)
+            Text(item.title).font(.system(size: 12)).foregroundColor(textPrimaryAdaptive).lineLimit(1)
+          }
+        }
+        if overflow > 0 {
+          Text("+\(overflow) de plus").font(.system(size: 10)).foregroundColor(textSecondaryAdaptive).padding(.top, 1)
+        }
+        Spacer(minLength: 0)
+      }
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(bgAdaptive)
+  }
+}
+
+struct TaskDashboardWidget: Widget {
+  let kind = "EisenhowerDashboard"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        TaskDashboardEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        TaskDashboardEntryView(entry: entry)
+      }
+    }
+    .configurationDisplayName("Task Dashboard")
+    .description("All tasks with quadrant counts.")
+    .supportedFamilies([.systemSmall, .systemMedium])
+  }
+}
+
+// MARK: - Double Section (Q1 + Q2 side by side)
+
+struct DoubleSectionEntryView: View {
+  var entry: EisenhowerEntry
+  var body: some View {
+    HStack(spacing: 0) {
+      QuadrantListView(tasks: entry.data.q1, accentColor: q1Color, label: "Do First", iconName: "exclamationmark.circle.fill")
+      dividerAdaptive.frame(width: 1)
+      QuadrantListView(tasks: entry.data.q2, accentColor: q2Color, label: "Schedule", iconName: "calendar")
+    }
+    .background(bgAdaptive)
+  }
+}
+
+struct DoubleSectionWidget: Widget {
+  let kind = "EisenhowerDouble"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        DoubleSectionEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        DoubleSectionEntryView(entry: entry)
+      }
+    }
+    .configurationDisplayName("Double Section")
+    .description("Do First and Schedule side by side.")
+    .supportedFamilies([.systemMedium])
+  }
+}
+
+// MARK: - Date & Tasks
+
+private let monthFormatter: DateFormatter = {
+  let f = DateFormatter(); f.dateFormat = "MMM"; return f
+}()
+private let weekdayFormatter: DateFormatter = {
+  let f = DateFormatter(); f.dateFormat = "EEEE"; return f
+}()
+
+struct DateTasksEntryView: View {
+  var entry: EisenhowerEntry
+  @Environment(\.widgetFamily) var family
+
+  private struct QDef { let tasks: [WidgetTask]; let label: String; let color: Color }
+  private func quadrants(_ data: WidgetData) -> [QDef] { [
+    QDef(tasks: data.q1, label: "Do First",  color: q1Color),
+    QDef(tasks: data.q2, label: "Schedule",  color: q2Color),
+    QDef(tasks: data.q3, label: "Delegate",  color: q3Color),
+    QDef(tasks: data.q4, label: "Eliminate", color: q4Color),
+  ] }
+
+  var body: some View {
+    let qs = quadrants(entry.data)
+    let dayNum = Calendar.current.component(.day, from: entry.date)
+    let month = monthFormatter.string(from: entry.date).uppercased()
+    let weekday = weekdayFormatter.string(from: entry.date)
+    let maxPerQ = family == .systemLarge ? 2 : 1
+
+    HStack(spacing: 0) {
+      VStack(alignment: .leading, spacing: 2) {
+        Text(month).font(.system(size: 10, weight: .semibold)).foregroundColor(textSecondaryAdaptive)
+        Text("\(dayNum)").font(.system(size: 32, weight: .bold)).foregroundColor(textPrimaryAdaptive).lineLimit(1)
+        Text(weekday).font(.system(size: 10)).foregroundColor(q2Color).lineLimit(2)
+        Spacer()
+      }
+      .padding(12)
+      .frame(width: 72, maxHeight: .infinity, alignment: .topLeading)
+
+      dividerAdaptive.frame(width: 1)
+
+      VStack(alignment: .leading, spacing: 5) {
+        ForEach(0..<qs.count, id: \.self) { i in
+          let q = qs[i]
+          if !q.tasks.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+              HStack(spacing: 4) {
+                Circle().fill(q.color).frame(width: 5, height: 5)
+                Text(q.label).font(.system(size: 9, weight: .bold)).foregroundColor(q.color)
+                Spacer()
+                Text("\(q.tasks.count)").font(.system(size: 9, weight: .semibold)).foregroundColor(q.color)
+              }
+              ForEach(Array(q.tasks.prefix(maxPerQ))) { task in
+                Text("· \(task.title)")
+                  .font(.system(size: 10))
+                  .foregroundColor(textPrimaryAdaptive)
+                  .lineLimit(1)
+                  .padding(.leading, 9)
+              }
+            }
+          }
+        }
+        Spacer(minLength: 0)
+      }
+      .padding(10)
+      .frame(maxHeight: .infinity, alignment: .topLeading)
+    }
+    .background(bgAdaptive)
+  }
+}
+
+struct DateTasksWidget: Widget {
+  let kind = "EisenhowerDateTasks"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: EisenhowerProvider()) { entry in
+      if #available(iOS 17.0, *) {
+        DateTasksEntryView(entry: entry).containerBackground(bgAdaptive, for: .widget)
+      } else {
+        DateTasksEntryView(entry: entry)
+      }
+    }
+    .configurationDisplayName("Date & Tasks")
+    .description("Today's date with tasks by quadrant.")
     .supportedFamilies([.systemMedium, .systemLarge])
   }
 }

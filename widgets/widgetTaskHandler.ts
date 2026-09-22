@@ -6,17 +6,19 @@ import { Q2Widget } from './Q2Widget';
 import { Q3Widget } from './Q3Widget';
 import { Q4Widget } from './Q4Widget';
 import { MatrixOverviewWidget } from './MatrixOverviewWidget';
+import { DashboardWidget } from './DashboardWidget';
+import { DoubleSectionWidget } from './DoubleSectionWidget';
+import { DateTasksWidget } from './DateTasksWidget';
 import type { WidgetData } from '../src/services/widgetService';
 
 const WIDGET_DATA_KEY = '@eisenhower/widget_data';
-const WIDGET_TASKS_KEY = '@eisenhower/widget_tasks'; // legacy fallback
+const WIDGET_TASKS_KEY = '@eisenhower/widget_tasks';
 
 async function loadWidgetData(): Promise<WidgetData> {
   try {
     const json = await AsyncStorage.getItem(WIDGET_DATA_KEY);
     if (json) return JSON.parse(json) as WidgetData;
 
-    // Legacy fallback: read old Q1-only key
     const legacy = await AsyncStorage.getItem(WIDGET_TASKS_KEY);
     if (legacy) {
       const q1 = JSON.parse(legacy) as WidgetTask[];
@@ -44,14 +46,18 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
         renderWidget(React.createElement(Q4Widget, { tasks: data.q4 }));
       } else if (name === 'EisenhowerMatrix') {
         renderWidget(React.createElement(MatrixOverviewWidget, { data }));
+      } else if (name === 'EisenhowerDashboard') {
+        renderWidget(React.createElement(DashboardWidget, { data }));
+      } else if (name === 'EisenhowerDouble') {
+        renderWidget(React.createElement(DoubleSectionWidget, { q1Tasks: data.q1, q2Tasks: data.q2 }));
+      } else if (name === 'EisenhowerDateTasks') {
+        renderWidget(React.createElement(DateTasksWidget, { data }));
       } else {
-        // Default: 'Eisenhower' = Q1
         renderWidget(React.createElement(EisenhowerWidget, { tasks: data.q1 }));
       }
       break;
     }
     case 'WIDGET_CLICK':
-      // Android handles OPEN_APP action via clickAction prop — no extra code needed
       break;
     default:
       break;

@@ -9,5 +9,8 @@ struct EisenhowerWidgetBundle: WidgetBundle {
     Q3Widget()
     Q4Widget()
     MatrixWidget()
+    TaskDashboardWidget()
+    DoubleSectionWidget()
+    DateTasksWidget()
   }
 }
