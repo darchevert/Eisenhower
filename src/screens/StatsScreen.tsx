@@ -129,15 +129,15 @@ export function StatsScreen() {
         <View style={styles.summaryRow}>
           <View style={[styles.summaryCard, { backgroundColor: colors.surface }, Shadow.sm]}>
             <Text style={[styles.summaryValue, { color: colors.text }]} maxFontSizeMultiplier={1.2}>{stats.totalCompleted}</Text>
-            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.1}>{t('stats.totalDone')}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.1} numberOfLines={2}>{t('stats.totalDone')}</Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: colors.surface }, Shadow.sm]}>
             <Text style={[styles.summaryValue, { color: colors.text }]} maxFontSizeMultiplier={1.2}>{stats.completedThisWeek}</Text>
-            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.1}>{t('stats.thisWeek')}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.1} numberOfLines={2}>{t('stats.thisWeek')}</Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: colors.surface }, Shadow.sm]}>
             <Text style={[styles.summaryValue, { color: '#F59E0B' }]} maxFontSizeMultiplier={1.2}>{stats.streakDays}🔥</Text>
-            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.1}>{t('stats.dayStreak')}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} maxFontSizeMultiplier={1.1} numberOfLines={2}>{t('stats.dayStreak')}</Text>
           </View>
         </View>
 
@@ -174,7 +174,7 @@ export function StatsScreen() {
             return (
               <View key={id} style={styles.quadrantRow}>
                 <View style={[styles.quadrantDot, { backgroundColor: qStyle.accent }]} />
-                <Text style={[styles.quadrantRowLabel, { color: colors.text }]} maxFontSizeMultiplier={1.1}>
+                <Text style={[styles.quadrantRowLabel, { color: colors.text }]} maxFontSizeMultiplier={1.1} numberOfLines={1}>
                   {t(`quadrants.${id}.label`)}
                 </Text>
                 <View style={[styles.quadrantBarContainer, { backgroundColor: colors.surfaceSecondary }]}>
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   progressLabel: { ...Typography.caption1 },
   quadrantRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.sm },
   quadrantDot: { width: 8, height: 8, borderRadius: 4 },
-  quadrantRowLabel: { width: 72, ...Typography.footnote, fontWeight: '500' },
+  quadrantRowLabel: { width: 110, ...Typography.footnote, fontWeight: '500' },
   quadrantBarContainer: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
   quadrantBar: { height: '100%', borderRadius: 4 },
   quadrantCount: { width: 24, ...Typography.footnote, textAlign: 'right' },

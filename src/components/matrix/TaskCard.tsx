@@ -66,14 +66,14 @@ export function TaskCard({ task, accentColor, onPress }: TaskCardProps) {
   const renderLeftActions = () => (
     <View style={[styles.swipeAction, styles.completeAction]}>
       <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
-      <Text style={styles.swipeText}>{t('tasks.done')}</Text>
+      <Text style={styles.swipeText} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.0}>{t('tasks.done')}</Text>
     </View>
   );
 
   const renderRightActions = () => (
     <View style={[styles.swipeAction, styles.deleteAction]}>
       <Ionicons name="trash" size={20} color="#FFFFFF" />
-      <Text style={styles.swipeText}>{t('tasks.delete')}</Text>
+      <Text style={styles.swipeText} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.0}>{t('tasks.delete')}</Text>
     </View>
   );
 
