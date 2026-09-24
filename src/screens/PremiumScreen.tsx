@@ -185,7 +185,7 @@ export function PremiumScreen() {
           <View style={styles.promoBanner}>
             <Ionicons name="timer-outline" size={16} color="#fff" />
             <Text style={styles.promoText}>
-              Offre nouveaux membres — expire dans{' '}
+              Offre nouveaux membres, expire dans{' '}
               <Text style={styles.promoTimer}>{formatCountdown(countdown)}</Text>
             </Text>
           </View>

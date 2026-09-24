@@ -200,7 +200,7 @@ export function MatrixScreen() {
         <View style={[styles.focusBanner, { backgroundColor: colors.primary + '18' }]}>
           <Ionicons name="eye-outline" size={13} color={colors.primary} />
           <Text style={[styles.focusBannerText, { color: colors.primary }]} maxFontSizeMultiplier={1.1}>
-            {t('matrix.focusMode')} — Q1 & Q2
+            {t('matrix.focusMode')}: Q1 & Q2
           </Text>
           <TouchableOpacity onPress={handleFocusMode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name="close" size={14} color={colors.primary} />
