@@ -48,6 +48,7 @@ export function MatrixPickerSheet({ visible, onClose, onNavigatePremium }: Props
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const newInputRef = useRef<TextInput>(null);
   const renameInputRef = useRef<TextInput>(null);
+  const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (visible) {
@@ -69,7 +70,10 @@ export function MatrixPickerSheet({ visible, onClose, onNavigatePremium }: Props
 
   useEffect(() => {
     if (creatingNew) {
-      setTimeout(() => newInputRef.current?.focus(), 80);
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+        newInputRef.current?.focus();
+      }, 80);
     }
   }, [creatingNew]);
 
@@ -149,8 +153,10 @@ export function MatrixPickerSheet({ visible, onClose, onNavigatePremium }: Props
     onClose();
   }
 
+  const FREE_MATRIX_LIMIT = 3;
+
   function handleNewMatrixPress() {
-    if (!isPremium && matrices.length >= 1) {
+    if (!isPremium && matrices.length >= FREE_MATRIX_LIMIT) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Alert.alert(
         t('common.premium'),
@@ -229,6 +235,7 @@ export function MatrixPickerSheet({ visible, onClose, onNavigatePremium }: Props
           )}
 
           <ScrollView
+            ref={scrollRef}
             style={styles.list}
             contentContainerStyle={styles.listContent}
             keyboardShouldPersistTaps="handled"
