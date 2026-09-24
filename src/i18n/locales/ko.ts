@@ -102,12 +102,15 @@ const ko: Translations = {
     statusPremium: '⭐ 프리미엄',
     unlockPremium: '프리미엄 잠금 해제',
     unlockPremiumSub: '테마, 다크 모드, 통계 등 — 일회성 구매',
+    notificationsPermissionDenied: '기기 설정에서 알림을 허용해 주세요.',
   },
   premium: {
     title: '프리미엄 되기',
     subtitle: '완전한 아이젠하워 경험 잠금 해제',
     oneTime: '일회성 구매',
     restore: '구매 복원',
+    terms: '이용약관',
+    privacy: '개인정보 처리방침',
     features: {
       themes: '프리미엄 테마',
       themesDesc: '7가지 아름다운 색 구성',

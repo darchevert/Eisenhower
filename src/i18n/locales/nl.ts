@@ -102,12 +102,15 @@ const nl: Translations = {
     statusPremium: '⭐ Premium',
     unlockPremium: 'Premium halen',
     unlockPremiumSub: "Thema's, donkere modus, stats & meer — eenmalig",
+    notificationsPermissionDenied: 'Sta meldingen toe in de apparaatinstellingen.',
   },
   premium: {
     title: 'Ga Premium',
     subtitle: 'Ontgrendel de volledige Eisenhower-ervaring',
     oneTime: 'Eenmalige aankoop',
     restore: 'Aankoop herstellen',
+    terms: 'Gebruiksvoorwaarden',
+    privacy: 'Privacybeleid',
     features: {
       themes: "Premium thema's",
       themesDesc: "7 mooie kleurenschema's",

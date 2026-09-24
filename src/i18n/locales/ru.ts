@@ -102,12 +102,15 @@ const ru: Translations = {
     statusPremium: '⭐ Premium',
     unlockPremium: 'Получить Premium',
     unlockPremiumSub: 'Темы, тёмный режим, статистика и др. — разовая оплата',
+    notificationsPermissionDenied: 'Разрешите уведомления в настройках устройства.',
   },
   premium: {
     title: 'Перейти на Premium',
     subtitle: 'Разблокируйте полный опыт Эйзенхауэра',
     oneTime: 'Единовременная покупка',
     restore: 'Восстановить покупку',
+    terms: 'Условия использования',
+    privacy: 'Политика конфиденциальности',
     features: {
       themes: 'Темы Premium',
       themesDesc: '7 красивых цветовых схем',

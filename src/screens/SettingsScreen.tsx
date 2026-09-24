@@ -273,7 +273,7 @@ export function SettingsScreen() {
                   if (!granted) {
                     Alert.alert(
                       t('settings.dailyReminder'),
-                      'Please allow notifications in your device settings.'
+                      t('settings.notificationsPermissionDenied')
                     );
                     return;
                   }

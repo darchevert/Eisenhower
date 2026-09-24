@@ -102,12 +102,15 @@ const zh: Translations = {
     statusPremium: '⭐ 高级版',
     unlockPremium: '解锁高级版',
     unlockPremiumSub: '主题、深色模式、统计等 — 一次性购买',
+    notificationsPermissionDenied: '请在设备设置中允许通知。',
   },
   premium: {
     title: '升级高级版',
     subtitle: '解锁完整的艾森豪威尔矩阵体验',
     oneTime: '一次性购买',
     restore: '恢复购买',
+    terms: '使用条款',
+    privacy: '隐私政策',
     features: {
       themes: '高级主题',
       themesDesc: '7种精美配色方案',

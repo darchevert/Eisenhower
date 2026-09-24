@@ -102,12 +102,15 @@ const ar: Translations = {
     statusPremium: '⭐ مميز',
     unlockPremium: 'الترقية إلى مميز',
     unlockPremiumSub: 'أنماط، وضع داكن، إحصاءات والمزيد — شراء لمرة واحدة',
+    notificationsPermissionDenied: 'يرجى السماح بالإشعارات في إعدادات جهازك.',
   },
   premium: {
     title: 'الترقية إلى مميز',
     subtitle: 'افتح تجربة أيزنهاور الكاملة',
     oneTime: 'شراء لمرة واحدة',
     restore: 'استعادة الشراء',
+    terms: 'شروط الاستخدام',
+    privacy: 'سياسة الخصوصية',
     features: {
       themes: 'أنماط مميزة',
       themesDesc: '7 مخططات ألوان رائعة',

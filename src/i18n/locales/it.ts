@@ -102,12 +102,15 @@ const it: Translations = {
     statusPremium: '⭐ Premium',
     unlockPremium: 'Ottieni Premium',
     unlockPremiumSub: 'Temi, modalità scura, stats & altro — acquisto unico',
+    notificationsPermissionDenied: 'Consenti le notifiche nelle impostazioni del dispositivo.',
   },
   premium: {
     title: 'Diventa Premium',
     subtitle: "Sblocca l'esperienza Eisenhower completa",
     oneTime: 'Acquisto unico',
     restore: "Ripristina l'acquisto",
+    terms: "Termini d'uso",
+    privacy: 'Informativa sulla privacy',
     features: {
       themes: 'Temi Premium',
       themesDesc: '7 bellissimi schemi colore',

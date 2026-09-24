@@ -298,14 +298,14 @@ export function PremiumScreen() {
 
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={styles.restoreBtn}>
             <Text style={[styles.restoreText, { color: colors.textSecondary }]}>
-              Restaurer un achat
+              {t('premium.restore')}
             </Text>
           </TouchableOpacity>
 
           <View style={styles.legalRow}>
-            <Text style={[styles.legalText, { color: colors.textTertiary }]}>Conditions d'utilisation</Text>
+            <Text style={[styles.legalText, { color: colors.textTertiary }]}>{t('premium.terms')}</Text>
             <Text style={[styles.legalDot, { color: colors.textTertiary }]}>·</Text>
-            <Text style={[styles.legalText, { color: colors.textTertiary }]}>Politique de confidentialité</Text>
+            <Text style={[styles.legalText, { color: colors.textTertiary }]}>{t('premium.privacy')}</Text>
           </View>
         </View>
 

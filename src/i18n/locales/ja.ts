@@ -102,12 +102,15 @@ const ja: Translations = {
     statusPremium: '⭐ プレミアム',
     unlockPremium: 'プレミアムを解除',
     unlockPremiumSub: 'テーマ、ダークモード、統計など — 買い切り',
+    notificationsPermissionDenied: 'デバイスの設定で通知を許可してください。',
   },
   premium: {
     title: 'プレミアムになる',
     subtitle: '完全なアイゼンハワー体験をアンロック',
     oneTime: '買い切り',
     restore: '購入を復元',
+    terms: '利用規約',
+    privacy: 'プライバシーポリシー',
     features: {
       themes: 'プレミアムテーマ',
       themesDesc: '7つの美しいカラースキーム',

@@ -107,12 +107,15 @@ const en = {
     statusPremium: '⭐ Premium',
     unlockPremium: 'Unlock Premium',
     unlockPremiumSub: 'Themes, dark mode, stats & more — one-time',
+    notificationsPermissionDenied: 'Please allow notifications in your device settings.',
   },
   premium: {
     title: 'Go Premium',
     subtitle: 'Unlock the full Eisenhower experience',
     oneTime: 'One-time purchase',
     restore: 'Restore Purchase',
+    terms: 'Terms of Use',
+    privacy: 'Privacy Policy',
     features: {
       themes: 'Premium Themes',
       themesDesc: '7 beautiful color schemes',
