@@ -13,6 +13,7 @@ import Animated, {
   useSharedValue,
   useAnimatedProps,
   withTiming,
+  cancelAnimation,
   Easing,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -79,15 +80,6 @@ export function FocusScreen() {
   }));
 
   useEffect(() => {
-    if (totalSeconds > 0) {
-      progress.value = withTiming(timeLeft / totalSeconds, {
-        duration: 800,
-        easing: Easing.linear,
-      });
-    }
-  }, [timeLeft, totalSeconds]);
-
-  useEffect(() => {
     if (!isRunning || isPaused) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -122,6 +114,8 @@ export function FocusScreen() {
     setIsRunning(false);
     setIsPaused(false);
     setShowComplete(true);
+    cancelAnimation(progress);
+    progress.value = 0;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     addFocusSession({
@@ -156,6 +150,7 @@ export function FocusScreen() {
     const secs = PRESETS[index].minutes * 60;
     setTotalSeconds(secs);
     setTimeLeft(secs);
+    cancelAnimation(progress);
     progress.value = withTiming(1, { duration: 400 });
   }
 
@@ -165,16 +160,19 @@ export function FocusScreen() {
     setShowComplete(false);
     setIsRunning(true);
     setIsPaused(false);
+    progress.value = withTiming(0, { duration: timeLeft * 1000, easing: Easing.linear });
   }
 
   function handlePause() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    cancelAnimation(progress);
     setIsPaused(true);
   }
 
   function handleResume() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsPaused(false);
+    progress.value = withTiming(0, { duration: timeLeft * 1000, easing: Easing.linear });
   }
 
   function handleEnd() {
@@ -183,6 +181,7 @@ export function FocusScreen() {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    cancelAnimation(progress);
     setIsRunning(false);
     setIsPaused(false);
     setShowComplete(false);
