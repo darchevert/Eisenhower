@@ -17,6 +17,7 @@ module.exports = {
       bundleIdentifier: "com.darchevert.eisenhower",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        NSUserTrackingUsageDescription: "This app may use your advertising identifier to show relevant ads and measure advertising effectiveness.",
         NSCalendarsUsageDescription: "L'app accède à votre calendrier pour afficher vos événements dans les widgets.",
         NSCalendarsFullAccessUsageDescription: "L'app accède à votre calendrier pour afficher vos événements dans les widgets.",
       },

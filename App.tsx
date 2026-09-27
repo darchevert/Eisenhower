@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 import * as Calendar from 'expo-calendar';
+import MobileAds from 'react-native-google-mobile-ads';
 import { ThemeProvider } from '@/theme/Theme';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTaskStore } from '@/store/taskStore';
@@ -16,6 +17,7 @@ import { NotificationService } from '@/services/notificationService';
 
 // Configure RevenueCat once at module load (before any component mounts)
 PurchaseService.configure();
+MobileAds().initialize();
 
 function ThemedApp() {
   const currentTheme = useSettingsStore((s) => s.currentTheme);
