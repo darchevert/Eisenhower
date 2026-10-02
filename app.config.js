@@ -61,7 +61,6 @@ module.exports = {
               targetCellWidth: 3,
               targetCellHeight: 2,
               description: "Urgent & important tasks",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerQ2",
@@ -71,7 +70,6 @@ module.exports = {
               targetCellWidth: 3,
               targetCellHeight: 2,
               description: "Important but not urgent tasks",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerQ3",
@@ -81,7 +79,6 @@ module.exports = {
               targetCellWidth: 3,
               targetCellHeight: 2,
               description: "Urgent but not important tasks",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerQ4",
@@ -91,7 +88,6 @@ module.exports = {
               targetCellWidth: 3,
               targetCellHeight: 2,
               description: "Neither urgent nor important tasks",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerMatrix",
@@ -101,7 +97,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 3,
               description: "All four quadrants at a glance",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerDashboard",
@@ -111,7 +106,6 @@ module.exports = {
               targetCellWidth: 3,
               targetCellHeight: 2,
               description: "All tasks with quadrant counts",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerDouble",
@@ -121,7 +115,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 2,
               description: "Do First and Schedule side by side",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerDateTasks",
@@ -131,7 +124,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 2,
               description: "Today's date with tasks by quadrant",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerCalendarTasks",
@@ -141,7 +133,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 3,
               description: "Mini calendrier mensuel avec tâches par quadrant",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerToday",
@@ -151,7 +142,6 @@ module.exports = {
               targetCellWidth: 2,
               targetCellHeight: 2,
               description: "Date du jour avec résumé des quadrants",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerUpcoming",
@@ -161,7 +151,6 @@ module.exports = {
               targetCellWidth: 3,
               targetCellHeight: 2,
               description: "Toutes les tâches par ordre de priorité",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerBoard",
@@ -171,7 +160,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 3,
               description: "Calendrier et vue complète de toutes les tâches",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerMonthDefault",
@@ -181,7 +169,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 2,
               description: "Calendrier du mois avec points d'événements",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerMonthBloc",
@@ -191,7 +178,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 2,
               description: "Calendrier avec blocs colorés pour les jours avec événements",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerMonthClassique",
@@ -201,7 +187,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 2,
               description: "Calendrier style classique épuré",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerSchedule",
@@ -211,7 +196,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 2,
               description: "Vos événements du jour",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
             {
               name: "EisenhowerFullCal",
@@ -221,7 +205,6 @@ module.exports = {
               targetCellWidth: 4,
               targetCellHeight: 3,
               description: "Vue complète du mois avec événements",
-              widgetFeatures: ["reconfigurable", "configuration_optional"],
             },
           ],
         },
