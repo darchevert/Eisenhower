@@ -15,6 +15,7 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: "com.darchevert.eisenhower",
+      appleTeamId: "LMUQKBGLGU",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSUserTrackingUsageDescription: "This app may use your advertising identifier to show relevant ads and measure advertising effectiveness.",

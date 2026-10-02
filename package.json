@@ -36,7 +36,7 @@
     "react-native-purchases": "^10.10.0",
     "react-native-reanimated": "~3.18.0",
     "react-native-safe-area-context": "5.4.0",
-    "react-native-screens": "~4.4.0",
+    "react-native-screens": "^4.28.0",
     "react-native-svg": "^15.11.2",
     "react-native-web": "^0.20.0",
     "zustand": "^5.0.3"
